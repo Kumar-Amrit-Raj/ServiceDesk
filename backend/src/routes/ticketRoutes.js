@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { checkDuplicateTickets } from '../controllers/duplicateController.js';
+import { suggestResolvedTickets } from '../controllers/solutionController.js';
 import {
   createTicket,
   createTicketComment,
@@ -18,6 +19,7 @@ const router = Router();
 router.use(authenticate);
 router.route('/').get(listTickets).post(createTicket);
 router.post('/duplicate-check', checkDuplicateTickets);
+router.post('/solution-suggestions', suggestResolvedTickets);
 router.get('/support-agents', authorizeRoles('support', 'admin'), listSupportAgents);
 router.get('/:id/comments', listTicketComments);
 router.post('/:id/comments', createTicketComment);
