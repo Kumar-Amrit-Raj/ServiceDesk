@@ -1,0 +1,111 @@
+/* Ticket-detail polish: separate functional areas into real cards and remove the outer-box feel. */
+
+.ticket-detail-panel {
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  box-shadow: none;
+}
+
+.ticket-detail-header {
+  border: 1px solid #d7d8d2;
+  border-bottom: 0;
+  background: linear-gradient(90deg, #fff8f3 0%, #ffffff 48%);
+  box-shadow: inset 4px 0 0 #ff651f, 0 4px 14px rgba(23, 24, 20, 0.035);
+}
+
+.ticket-meta-grid {
+  border: 1px solid #d7d8d2;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(23, 24, 20, 0.035);
+}
+
+.ticket-description-block,
+.workflow-controls,
+.comments-panel,
+.history-panel {
+  background: #ffffff;
+  border: 1px solid #d7d8d2;
+  box-shadow: 0 7px 18px rgba(23, 24, 20, 0.045);
+}
+
+.ticket-description-block {
+  margin: 18px 0 0;
+  padding: 22px 24px;
+  border-top: 3px solid #d99a18;
+  border-left: 1px solid #d7d8d2;
+}
+
+.ticket-description-block > span {
+  color: #76590f;
+}
+
+.workflow-controls {
+  margin: 18px 0 0;
+  padding: 24px 26px;
+  border-top: 3px solid #ff651f;
+  border-left: 1px solid #d7d8d2;
+}
+
+.ticket-detail-columns {
+  gap: 18px;
+  margin-top: 18px;
+  padding: 0;
+  background: transparent;
+}
+
+.comments-panel {
+  border-top: 3px solid #3f79ad;
+  border-left: 1px solid #d7d8d2;
+  border-right: 1px solid #d7d8d2;
+  border-bottom: 1px solid #d7d8d2;
+}
+
+.comments-panel .desk-eyebrow {
+  color: #386b9b;
+}
+
+.history-panel {
+  border-top: 3px solid #4e855f;
+  border-left: 1px solid #d7d8d2;
+}
+
+.history-panel .desk-eyebrow {
+  color: #3f7553;
+}
+
+/* Make the ticket table header clearly distinct from the page background. */
+.ticket-table thead tr,
+.ticket-table th {
+  background: #e7e4dc;
+}
+
+.ticket-table th {
+  color: #4e5049;
+  border-bottom: 1px solid #c8cac3;
+}
+
+@media (max-width: 1100px) {
+  .ticket-detail-columns {
+    gap: 14px;
+  }
+
+  .comments-panel {
+    border-right: 1px solid #d7d8d2;
+    border-bottom: 1px solid #d7d8d2;
+  }
+}
+
+@media (max-width: 640px) {
+  .ticket-description-block,
+  .workflow-controls {
+    margin-top: 12px;
+    padding: 20px;
+  }
+
+  .ticket-detail-columns {
+    gap: 12px;
+    margin-top: 12px;
+    padding: 0;
+  }
+}
