@@ -10,6 +10,11 @@ export async function fetchTickets(params = {}) {
   return data.tickets;
 }
 
+export async function checkDuplicateTickets(payload) {
+  const { data } = await api.post('/tickets/duplicate-check', payload);
+  return data.matches;
+}
+
 export async function createTicket(payload) {
   const { data } = await api.post('/tickets', payload);
   return data.ticket;
