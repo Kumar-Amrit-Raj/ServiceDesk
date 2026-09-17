@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getApiError } from '../services/api.js';
 import {
   createTicket,
@@ -42,7 +42,9 @@ function historyAgentLabel(value, agents) {
 
 function historyMessage(item, agents) {
   if (item.field_name === 'status') {
-    return `Status changed from ${formatStatus(item.old_value)} to ${formatStatus(item.new_value)}.`;
+    const oldStatus = formatStatus(item.old_value).toUpperCase();
+    const newStatus = formatStatus(item.new_value).toUpperCase();
+    return `Status changed from ${oldStatus} to ${newStatus}.`;
   }
   if (item.field_name === 'assigned_to') {
     const oldLabel = historyAgentLabel(item.old_value, agents);
@@ -56,6 +58,7 @@ function historyMessage(item, agents) {
 
 export default function HomePage({ user, onLogout }) {
   const isStaff = user.role === 'support' || user.role === 'admin';
+  const ticketDetailRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -103,6 +106,16 @@ export default function HomePage({ user, onLogout }) {
 
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (!detailLoading && !selectedTicket) return;
+
+    const frame = requestAnimationFrame(() => {
+      ticketDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [detailLoading, selectedTicket?.id]);
 
   const stats = useMemo(() => ({
     open: tickets.filter((ticket) => ticket.status === 'open').length,
@@ -421,13 +434,13 @@ export default function HomePage({ user, onLogout }) {
         </section>
 
         {detailLoading && (
-          <section className="ticket-detail-panel">
+          <section className="ticket-detail-panel" ref={ticketDetailRef}>
             <p className="detail-loading">Loading ticket workspace…</p>
           </section>
         )}
 
         {!detailLoading && selectedTicket && (
-          <section className="ticket-detail-panel">
+          <section className="ticket-detail-panel" ref={ticketDetailRef}>
             <div className="ticket-detail-header">
               <div>
                 <p className="desk-eyebrow">TICKET #{String(selectedTicket.id).padStart(4, '0')}</p>
