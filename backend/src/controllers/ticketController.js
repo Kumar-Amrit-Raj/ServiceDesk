@@ -2,6 +2,7 @@ import pool from '../database/pool.js';
 
 const PRIORITIES = new Set(['low', 'medium', 'high']);
 const STATUSES = new Set(['open', 'in_progress', 'resolved', 'closed']);
+const SLA_STATES = new Set(['on_track', 'due_soon', 'overdue', 'met', 'breached']);
 const RESOLUTION_HOURS = { high: 12, medium: 24, low: 48 };
 
 function positiveInteger(value) {
@@ -26,7 +27,23 @@ function ticketSelect() {
       t.target_resolution_at,
       t.resolved_at,
       t.created_at,
-      t.updated_at
+      t.updated_at,
+      CASE
+        WHEN t.status IN ('resolved', 'closed') THEN
+          CASE
+            WHEN t.resolved_at IS NOT NULL AND t.resolved_at <= t.target_resolution_at THEN 'met'
+            ELSE 'breached'
+          END
+        WHEN t.target_resolution_at < CURRENT_TIMESTAMP THEN 'overdue'
+        WHEN t.target_resolution_at <= CURRENT_TIMESTAMP + INTERVAL '4 hours' THEN 'due_soon'
+        ELSE 'on_track'
+      END AS sla_state,
+      CASE
+        WHEN t.status IN ('resolved', 'closed') AND t.resolved_at IS NOT NULL THEN
+          CEIL(EXTRACT(EPOCH FROM (t.target_resolution_at - t.resolved_at)) / 60.0)::integer
+        ELSE
+          CEIL(EXTRACT(EPOCH FROM (t.target_resolution_at - CURRENT_TIMESTAMP)) / 60.0)::integer
+      END AS sla_minutes_remaining
     FROM tickets t
     JOIN users requester ON requester.id = t.user_id
     JOIN categories c ON c.id = t.category_id
@@ -122,6 +139,31 @@ export async function listTickets(req, res) {
     where.push(`t.category_id = ${addValue(categoryId)}`);
   }
 
+  if (req.query.sla) {
+    const sla = String(req.query.sla).trim().toLowerCase();
+    if (!SLA_STATES.has(sla)) {
+      return res.status(400).json({ message: 'Invalid SLA filter.' });
+    }
+
+    if (sla === 'overdue') {
+      where.push(`t.status IN ('open', 'in_progress') AND t.target_resolution_at < CURRENT_TIMESTAMP`);
+    } else if (sla === 'due_soon') {
+      where.push(`t.status IN ('open', 'in_progress')
+        AND t.target_resolution_at >= CURRENT_TIMESTAMP
+        AND t.target_resolution_at <= CURRENT_TIMESTAMP + INTERVAL '4 hours'`);
+    } else if (sla === 'on_track') {
+      where.push(`t.status IN ('open', 'in_progress')
+        AND t.target_resolution_at > CURRENT_TIMESTAMP + INTERVAL '4 hours'`);
+    } else if (sla === 'met') {
+      where.push(`t.status IN ('resolved', 'closed')
+        AND t.resolved_at IS NOT NULL
+        AND t.resolved_at <= t.target_resolution_at`);
+    } else if (sla === 'breached') {
+      where.push(`t.status IN ('resolved', 'closed')
+        AND (t.resolved_at IS NULL OR t.resolved_at > t.target_resolution_at)`);
+    }
+  }
+
   if (req.query.search) {
     const search = String(req.query.search).trim();
     if (search) {
@@ -130,7 +172,7 @@ export async function listTickets(req, res) {
     }
   }
 
-  const clause = where.length ? ' WHERE ' + where.join(' AND ') : '';
+  const clause = where.length ? ' WHERE ' + where.map((condition) => `(${condition})`).join(' AND ') : '';
   const { rows } = await pool.query(
     `${ticketSelect()}${clause} ORDER BY t.created_at DESC, t.id DESC`,
     values,
