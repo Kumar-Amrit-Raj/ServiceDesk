@@ -54,3 +54,9 @@ export async function updateTicket(ticketId, payload) {
   const { data } = await api.patch(`/tickets/${ticketId}`, payload);
   return data.ticket;
 }
+
+
+export async function fetchTicketAnalytics() {
+  const { data } = await api.get('/tickets/analytics');
+  return data.analytics;
+}
