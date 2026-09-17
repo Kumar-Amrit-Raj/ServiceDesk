@@ -1,0 +1,109 @@
+.admin-users-panel {
+  margin: 24px 0;
+  padding: 22px;
+  border: 1px solid #d9dee8;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.admin-users-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.admin-users-heading h2 {
+  margin: 4px 0 6px;
+}
+
+.admin-users-heading p {
+  margin: 0;
+}
+
+.admin-users-heading > span {
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.admin-users-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-user-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e5e8ef;
+  border-radius: 14px;
+}
+
+.admin-user-identity {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.admin-user-identity span {
+  overflow: hidden;
+  color: #677083;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-role-badge {
+  padding: 6px 10px;
+  border: 1px solid #d8dde7;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.admin-role-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-role-actions button {
+  border: 1px solid #d3d8e2;
+  border-radius: 9px;
+  background: #fff;
+  padding: 8px 11px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-role-actions button.active {
+  border-color: #181b22;
+  background: #181b22;
+  color: #fff;
+}
+
+.admin-role-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-role-locked,
+.admin-users-empty {
+  color: #6b7280;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 720px) {
+  .admin-user-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .admin-role-actions {
+    grid-column: 1 / -1;
+  }
+}
