@@ -292,7 +292,10 @@
 
 .empty-tickets { padding: 34px !important; text-align: center !important; color: #85877f !important; }
 
-.ticket-detail-panel { overflow: hidden; }
+.ticket-detail-panel {
+  overflow: hidden;
+  scroll-margin-top: 84px;
+}
 .detail-loading { margin: 0; padding: 28px; color: #777972; }
 
 .ticket-detail-header {
