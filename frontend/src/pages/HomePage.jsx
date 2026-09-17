@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getApiError } from '../services/api.js';
+import AdminUserManagement from '../components/AdminUserManagement.jsx';
 import {
   checkDuplicateTickets,
   createTicket,
@@ -357,6 +358,10 @@ export default function HomePage({ user, onLogout }) {
           <article><span>RESOLVED / CLOSED</span><strong>{stats.resolved}</strong></article>
           <article><span>TOTAL</span><strong>{tickets.length}</strong></article>
         </section>
+
+        {user.role === 'admin' && (
+          <AdminUserManagement currentUserId={user.id} />
+        )}
 
         {(slaStats.overdue > 0 || slaStats.dueSoon > 0) && (
           <section className="sla-watch" aria-label="SLA watch">
