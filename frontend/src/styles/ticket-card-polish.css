@@ -7,37 +7,41 @@
   box-shadow: none;
 }
 
+/* Ticket title, metadata and description form one summary card. */
 .ticket-detail-header {
   border: 1px solid #d7d8d2;
   border-bottom: 0;
   background: linear-gradient(90deg, #fff8f3 0%, #ffffff 48%);
-  box-shadow: inset 4px 0 0 #ff651f, 0 4px 14px rgba(23, 24, 20, 0.035);
+  box-shadow: inset 4px 0 0 #ff651f;
 }
 
 .ticket-meta-grid {
   border: 1px solid #d7d8d2;
+  border-bottom: 0;
   background: #ffffff;
-  box-shadow: 0 4px 14px rgba(23, 24, 20, 0.035);
+  box-shadow: none;
 }
 
-.ticket-description-block,
+.ticket-description-block {
+  margin: 0;
+  padding: 22px 24px;
+  border: 1px solid #d7d8d2;
+  border-left: 1px solid #d7d8d2;
+  background: #ffffff;
+  box-shadow: 0 7px 18px rgba(23, 24, 20, 0.045);
+}
+
+.ticket-description-block > span {
+  color: #76590f;
+}
+
+/* Workflow, conversation and activity stay as distinct cards. */
 .workflow-controls,
 .comments-panel,
 .history-panel {
   background: #ffffff;
   border: 1px solid #d7d8d2;
   box-shadow: 0 7px 18px rgba(23, 24, 20, 0.045);
-}
-
-.ticket-description-block {
-  margin: 18px 0 0;
-  padding: 22px 24px;
-  border-top: 3px solid #d99a18;
-  border-left: 1px solid #d7d8d2;
-}
-
-.ticket-description-block > span {
-  color: #76590f;
 }
 
 .workflow-controls {
@@ -97,7 +101,11 @@
 }
 
 @media (max-width: 640px) {
-  .ticket-description-block,
+  .ticket-description-block {
+    margin-top: 0;
+    padding: 20px;
+  }
+
   .workflow-controls {
     margin-top: 12px;
     padding: 20px;
