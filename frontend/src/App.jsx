@@ -4,6 +4,36 @@ import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import api, { TOKEN_KEY, getApiError } from './services/api.js';
 
+const workflowSteps = [
+  ['01', 'REPORT', 'Describe the issue and choose a category.'],
+  ['02', 'TRIAGE', 'Set priority and keep the request structured.'],
+  ['03', 'ASSIGN', 'Route the request to the appropriate support queue.'],
+  ['04', 'RESOLVE', 'Keep comments, status changes and resolution history together.'],
+];
+
+function WorkflowPanel() {
+  return (
+    <aside className="workflow-panel" aria-label="ServiceDesk workflow">
+      <p className="workflow-eyebrow">SERVICE WORKFLOW</p>
+      <h2>From request to resolution, every step stays visible.</h2>
+      <p className="workflow-intro">A simple ticket flow keeps support requests organized without turning the workspace into a dashboard before you sign in.</p>
+
+      <div className="workflow-divider" />
+      <div className="workflow-steps">
+        {workflowSteps.map(([number, title, description]) => (
+          <div className="workflow-step" key={number}>
+            <span className="workflow-index">{number}</span>
+            <div>
+              <strong>{title}</strong>
+              <p>{description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState('login');
@@ -27,7 +57,7 @@ export default function App() {
         if (controller.signal.aborted) return;
         if (error.response?.status === 401) {
           localStorage.removeItem(TOKEN_KEY);
-          setNotice('Your session has expired. Please log in again.');
+          setNotice('Your session has expired. Please sign in again.');
         } else {
           setRestoreError(getApiError(error));
         }
@@ -47,36 +77,64 @@ export default function App() {
     setNotice('You have been logged out.');
   }
 
-  let content;
   if (loading) {
-    content = <p role="status">Restoring your session…</p>;
-  } else if (restoreError) {
-    content = <>
-      <p className="error" role="alert">{restoreError}</p>
-      <button onClick={() => setRetry(retry + 1)}>Retry connection</button>
-      <button className="secondary" onClick={logout}>Return to login</button>
-    </>;
-  } else if (user) {
-    content = <HomePage user={user} onLogout={logout} />;
-  } else if (page === 'register') {
-    content = <RegisterPage
-      onRegistered={() => { setNotice('Account created. Please log in.'); setPage('login'); }}
-      onLogin={() => { setNotice(''); setPage('login'); }}
-    />;
-  } else {
-    content = <LoginPage
-      notice={notice}
-      onLogin={(data) => { localStorage.setItem(TOKEN_KEY, data.token); setUser(data.user); setNotice(''); }}
-      onRegister={() => { setNotice(''); setPage('register'); }}
-    />;
+    return (
+      <main className="system-state-page">
+        <section className="system-state-card" aria-live="polite">
+          <span className="system-state-mark" />
+          <p>Restoring your ServiceDesk session…</p>
+        </section>
+      </main>
+    );
   }
 
+  if (restoreError) {
+    return (
+      <main className="system-state-page">
+        <section className="system-state-card">
+          <p className="error" role="alert">{restoreError}</p>
+          <button onClick={() => setRetry(retry + 1)}>Retry connection</button>
+          <button className="secondary" onClick={logout}>Return to login</button>
+        </section>
+      </main>
+    );
+  }
+
+  if (user) {
+    return (
+      <main className="signed-in-page">
+        <section className="signed-in-card">
+          <div className="signed-in-brand">ServiceDesk <span>IT SUPPORT WORKSPACE</span></div>
+          <HomePage user={user} onLogout={logout} />
+        </section>
+      </main>
+    );
+  }
+
+  const content = page === 'register'
+    ? <RegisterPage
+        onRegistered={() => { setNotice('Account created. Please sign in.'); setPage('login'); }}
+        onLogin={() => { setNotice(''); setPage('login'); }}
+      />
+    : <LoginPage
+        notice={notice}
+        onLogin={(data) => { localStorage.setItem(TOKEN_KEY, data.token); setUser(data.user); setNotice(''); }}
+        onRegister={() => { setNotice(''); setPage('register'); }}
+      />;
+
   return (
-    <main className="page">
-      <section className="card" aria-labelledby="app-title">
-        <p className="badge">IT Helpdesk · Under Development</p>
-        <h1 id="app-title">ServiceDesk</h1>
-        {content}
+    <main className="auth-page">
+      <section className="auth-shell">
+        <header className="auth-topbar">
+          <strong>ServiceDesk</strong>
+          <span>IT SUPPORT WORKSPACE</span>
+        </header>
+        <div className="auth-body">
+          <section className="auth-entry" aria-label={page === 'register' ? 'Create ServiceDesk account' : 'Sign in to ServiceDesk'}>
+            {content}
+          </section>
+          <WorkflowPanel />
+        </div>
       </section>
     </main>
   );
