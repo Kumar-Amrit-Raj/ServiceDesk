@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getApiError } from '../services/api.js';
 import {
+  checkDuplicateTickets,
   createTicket,
   createTicketComment,
   fetchCategories,
@@ -13,6 +14,7 @@ import {
 } from '../services/tickets.js';
 import '../styles/dashboard.css';
 import '../styles/sla.css';
+import '../styles/duplicate-warning.css';
 
 const EMPTY_FORM = {
   title: '',
@@ -82,6 +84,7 @@ export default function HomePage({ user, onLogout }) {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [duplicateMatches, setDuplicateMatches] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -145,20 +148,52 @@ export default function HomePage({ user, onLogout }) {
     dueSoon: tickets.filter((ticket) => ticket.sla_state === 'due_soon').length,
   }), [tickets]);
 
+  function updateCreateField(field, value) {
+    setForm((current) => ({ ...current, [field]: value }));
+    setDuplicateMatches([]);
+  }
+
+  function currentTicketPayload() {
+    return {
+      title: form.title,
+      description: form.description,
+      categoryId: Number(form.categoryId),
+      priority: form.priority,
+    };
+  }
+
+  async function createCurrentTicket() {
+    const ticket = await createTicket(currentTicketPayload());
+    setTickets((current) => [ticket, ...current]);
+    setForm(EMPTY_FORM);
+    setDuplicateMatches([]);
+    setShowCreate(false);
+  }
+
   async function handleCreate(event) {
     event.preventDefault();
     setCreating(true);
     setError('');
     try {
-      const ticket = await createTicket({
-        title: form.title,
-        description: form.description,
-        categoryId: Number(form.categoryId),
-        priority: form.priority,
-      });
-      setTickets((current) => [ticket, ...current]);
-      setForm(EMPTY_FORM);
-      setShowCreate(false);
+      const payload = currentTicketPayload();
+      const matches = await checkDuplicateTickets(payload);
+      if (matches.length) {
+        setDuplicateMatches(matches);
+        return;
+      }
+      await createCurrentTicket();
+    } catch (requestError) {
+      setError(getApiError(requestError));
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function createDespiteDuplicate() {
+    setCreating(true);
+    setError('');
+    try {
+      await createCurrentTicket();
     } catch (requestError) {
       setError(getApiError(requestError));
     } finally {
@@ -295,7 +330,13 @@ export default function HomePage({ user, onLogout }) {
             <h1>{user.role === 'user' ? 'My support tickets' : 'Support queue'}</h1>
             <p>Track requests, priorities and target resolution times from one workspace.</p>
           </div>
-          <button className="desk-primary" onClick={() => setShowCreate((value) => !value)}>
+          <button
+            className="desk-primary"
+            onClick={() => {
+              setShowCreate((value) => !value);
+              setDuplicateMatches([]);
+            }}
+          >
             {showCreate ? 'CANCEL' : '+ NEW TICKET'}
           </button>
         </div>
@@ -336,7 +377,7 @@ export default function HomePage({ user, onLogout }) {
                   required
                   maxLength={200}
                   value={form.title}
-                  onChange={(event) => setForm({ ...form, title: event.target.value })}
+                  onChange={(event) => updateCreateField('title', event.target.value)}
                   placeholder="e.g. Unable to connect to campus Wi-Fi"
                 />
               </label>
@@ -346,7 +387,7 @@ export default function HomePage({ user, onLogout }) {
                   <select
                     required
                     value={form.categoryId}
-                    onChange={(event) => setForm({ ...form, categoryId: event.target.value })}
+                    onChange={(event) => updateCreateField('categoryId', event.target.value)}
                   >
                     <option value="">Choose category</option>
                     {categories.map((category) => (
@@ -358,7 +399,7 @@ export default function HomePage({ user, onLogout }) {
                   Priority
                   <select
                     value={form.priority}
-                    onChange={(event) => setForm({ ...form, priority: event.target.value })}
+                    onChange={(event) => updateCreateField('priority', event.target.value)}
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -372,12 +413,49 @@ export default function HomePage({ user, onLogout }) {
                   required
                   rows={5}
                   value={form.description}
-                  onChange={(event) => setForm({ ...form, description: event.target.value })}
+                  onChange={(event) => updateCreateField('description', event.target.value)}
                   placeholder="Describe what happened, what you expected, and any troubleshooting already tried."
                 />
               </label>
+
+              {duplicateMatches.length > 0 && (
+                <section className="duplicate-warning" aria-label="Potential duplicate tickets">
+                  <div className="duplicate-warning-heading">
+                    <div>
+                      <span>POSSIBLE DUPLICATE</span>
+                      <h3>Similar active tickets already exist</h3>
+                    </div>
+                    <strong>{duplicateMatches.length} match{duplicateMatches.length === 1 ? '' : 'es'}</strong>
+                  </div>
+                  <p className="duplicate-warning-copy">
+                    Review the existing request before opening another ticket. Matching is based on category and shared keywords.
+                  </p>
+                  <div className="duplicate-match-list">
+                    {duplicateMatches.map((match) => (
+                      <article className="duplicate-match" key={match.id}>
+                        <div>
+                          <span>#{String(match.id).padStart(4, '0')} · {match.match_percent}% match</span>
+                          <strong>{match.title}</strong>
+                          <small>{formatStatus(match.status).toUpperCase()} · {match.category_name}</small>
+                          {match.matched_keywords.length > 0 && (
+                            <small>Shared keywords: {match.matched_keywords.join(', ')}</small>
+                          )}
+                        </div>
+                        <button type="button" onClick={() => openTicket(match.id)}>VIEW</button>
+                      </article>
+                    ))}
+                  </div>
+                  <div className="duplicate-warning-actions">
+                    <span>Create another ticket only if this is a separate issue.</span>
+                    <button type="button" onClick={createDespiteDuplicate} disabled={creating}>
+                      {creating ? 'CREATING…' : 'CREATE ANYWAY'}
+                    </button>
+                  </div>
+                </section>
+              )}
+
               <button className="desk-primary" type="submit" disabled={creating}>
-                {creating ? 'CREATING…' : 'CREATE TICKET'}
+                {creating ? 'CHECKING…' : 'CHECK & CREATE TICKET'}
               </button>
             </form>
           </section>
