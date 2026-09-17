@@ -144,6 +144,32 @@ export async function listTickets(req, res) {
     where.push(`t.category_id = ${addValue(categoryId)}`);
   }
 
+  if (req.query.assigneeId) {
+    if (req.user.role === 'user') {
+      return res.status(403).json({ message: 'Assignee filtering is available to support staff only.' });
+    }
+
+    const assigneeFilter = String(req.query.assigneeId).trim().toLowerCase();
+    if (assigneeFilter === 'unassigned') {
+      where.push('t.assigned_to IS NULL');
+    } else {
+      const assigneeId = positiveInteger(assigneeFilter);
+      if (!assigneeId) {
+        return res.status(400).json({ message: 'Invalid assignee filter.' });
+      }
+
+      const assignee = await pool.query(
+        `SELECT id FROM users WHERE id = $1 AND role IN ('support', 'admin')`,
+        [assigneeId],
+      );
+      if (!assignee.rows[0]) {
+        return res.status(400).json({ message: 'Invalid assignee filter.' });
+      }
+
+      where.push(`t.assigned_to = ${addValue(assigneeId)}`);
+    }
+  }
+
   if (req.query.sla) {
     const sla = String(req.query.sla).trim().toLowerCase();
     if (!SLA_STATES.has(sla)) {
