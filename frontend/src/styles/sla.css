@@ -1,0 +1,154 @@
+/* SLA tracking UI: compact, readable indicators without turning the workspace into a warning dashboard. */
+
+.sla-watch {
+  margin-top: 14px;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid #ead8c9;
+  border-left: 4px solid #e26a2c;
+  background: #fff9f5;
+  box-shadow: 0 4px 12px rgba(23, 24, 20, 0.035);
+}
+
+.sla-watch > div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.sla-watch-label {
+  color: #c94c14;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.sla-watch strong {
+  color: #9d3127;
+}
+
+.sla-watch > div > span:not(.sla-watch-label) {
+  color: #966411;
+  font-weight: 800;
+}
+
+.sla-watch p {
+  margin: 0;
+  color: #666860;
+  font-size: 0.78rem;
+}
+
+.sla-target-cell {
+  min-width: 145px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sla-target-cell > span {
+  color: #4f514b;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sla-target-cell > div,
+.ticket-meta-sla > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sla-target-cell small,
+.ticket-meta-sla small {
+  color: #73756e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sla-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sla-on_track {
+  border-color: #b8d4c0;
+  background: #eef8f1;
+  color: #386c4b;
+}
+
+.sla-due_soon {
+  border-color: #ecd28d;
+  background: #fff8df;
+  color: #8b6100;
+}
+
+.sla-overdue,
+.sla-breached {
+  border-color: #e4b2aa;
+  background: #fff0ed;
+  color: #a3392c;
+}
+
+.sla-met {
+  border-color: #afd4bd;
+  background: #edf8f1;
+  color: #2f7048;
+}
+
+.ticket-row-overdue > td {
+  background: #fffaf8;
+}
+
+.ticket-row-overdue:hover > td {
+  background: #fff5f1;
+}
+
+.ticket-meta-sla strong {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.ticket-meta-sla .sla-overdue,
+.ticket-meta-sla .sla-breached {
+  box-shadow: inset 3px 0 0 #c84435;
+}
+
+@media (max-width: 1100px) {
+  .sla-watch {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .ticket-filters select[aria-label='Filter by SLA state'] {
+    min-width: 142px;
+  }
+}
+
+@media (max-width: 700px) {
+  .sla-watch {
+    padding: 12px 14px;
+  }
+
+  .sla-watch > div {
+    gap: 9px 12px;
+  }
+
+  .sla-target-cell {
+    min-width: 130px;
+  }
+}
