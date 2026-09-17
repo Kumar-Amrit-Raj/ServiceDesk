@@ -5,6 +5,7 @@ import {
   createTicket,
   createTicketComment,
   fetchCategories,
+  fetchSolutionSuggestions,
   fetchSupportAgents,
   fetchTicket,
   fetchTicketComments,
@@ -15,6 +16,7 @@ import {
 import '../styles/dashboard.css';
 import '../styles/sla.css';
 import '../styles/duplicate-warning.css';
+import '../styles/solution-suggestions.css';
 
 const EMPTY_FORM = {
   title: '',
@@ -85,6 +87,7 @@ export default function HomePage({ user, onLogout }) {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [duplicateMatches, setDuplicateMatches] = useState([]);
+  const [solutionSuggestions, setSolutionSuggestions] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -148,9 +151,14 @@ export default function HomePage({ user, onLogout }) {
     dueSoon: tickets.filter((ticket) => ticket.sla_state === 'due_soon').length,
   }), [tickets]);
 
+  function clearCreateSuggestions() {
+    setDuplicateMatches([]);
+    setSolutionSuggestions([]);
+  }
+
   function updateCreateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
-    setDuplicateMatches([]);
+    clearCreateSuggestions();
   }
 
   function currentTicketPayload() {
@@ -166,7 +174,7 @@ export default function HomePage({ user, onLogout }) {
     const ticket = await createTicket(currentTicketPayload());
     setTickets((current) => [ticket, ...current]);
     setForm(EMPTY_FORM);
-    setDuplicateMatches([]);
+    clearCreateSuggestions();
     setShowCreate(false);
   }
 
@@ -176,11 +184,13 @@ export default function HomePage({ user, onLogout }) {
     setError('');
     try {
       const payload = currentTicketPayload();
-      const matches = await checkDuplicateTickets(payload);
-      if (matches.length) {
-        setDuplicateMatches(matches);
-        return;
-      }
+      const [matches, suggestions] = await Promise.all([
+        checkDuplicateTickets(payload),
+        fetchSolutionSuggestions(payload),
+      ]);
+      setDuplicateMatches(matches);
+      setSolutionSuggestions(suggestions);
+      if (matches.length || suggestions.length) return;
       await createCurrentTicket();
     } catch (requestError) {
       setError(getApiError(requestError));
@@ -189,7 +199,7 @@ export default function HomePage({ user, onLogout }) {
     }
   }
 
-  async function createDespiteDuplicate() {
+  async function createAfterReview() {
     setCreating(true);
     setError('');
     try {
@@ -334,7 +344,7 @@ export default function HomePage({ user, onLogout }) {
             className="desk-primary"
             onClick={() => {
               setShowCreate((value) => !value);
-              setDuplicateMatches([]);
+              clearCreateSuggestions();
             }}
           >
             {showCreate ? 'CANCEL' : '+ NEW TICKET'}
@@ -447,7 +457,51 @@ export default function HomePage({ user, onLogout }) {
                   </div>
                   <div className="duplicate-warning-actions">
                     <span>Create another ticket only if this is a separate issue.</span>
-                    <button type="button" onClick={createDespiteDuplicate} disabled={creating}>
+                    {solutionSuggestions.length === 0 && (
+                      <button type="button" onClick={createAfterReview} disabled={creating}>
+                        {creating ? 'CREATING…' : 'CREATE ANYWAY'}
+                      </button>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {solutionSuggestions.length > 0 && (
+                <section className="solution-suggestions" aria-label="Previous resolved ticket suggestions">
+                  <div className="solution-suggestions-heading">
+                    <div>
+                      <span>PREVIOUS SOLUTION</span>
+                      <h3>Similar resolved tickets may help</h3>
+                    </div>
+                    <strong>{solutionSuggestions.length} suggestion{solutionSuggestions.length === 1 ? '' : 's'}</strong>
+                  </div>
+                  <p className="solution-suggestions-copy">
+                    Review a previous resolution before opening a new request. Suggestions use the same category and shared keywords.
+                  </p>
+                  <div className="solution-suggestion-list">
+                    {solutionSuggestions.map((suggestion) => (
+                      <article className="solution-suggestion" key={suggestion.id}>
+                        <div className="solution-suggestion-main">
+                          <span>#{String(suggestion.id).padStart(4, '0')} · {suggestion.match_percent}% match</span>
+                          <strong>{suggestion.title}</strong>
+                          <small>{formatStatus(suggestion.status).toUpperCase()} · {suggestion.category_name}</small>
+                          {suggestion.resolution_note && (
+                            <div className="solution-note">
+                              <span>LAST SUPPORT NOTE</span>
+                              <p>{suggestion.resolution_note}</p>
+                            </div>
+                          )}
+                          {suggestion.matched_keywords.length > 0 && (
+                            <small>Shared keywords: {suggestion.matched_keywords.join(', ')}</small>
+                          )}
+                        </div>
+                        <button type="button" onClick={() => openTicket(suggestion.id)}>VIEW</button>
+                      </article>
+                    ))}
+                  </div>
+                  <div className="solution-suggestions-actions">
+                    <span>Try the previous resolution first if it applies. Create a new ticket if the issue remains.</span>
+                    <button type="button" onClick={createAfterReview} disabled={creating}>
                       {creating ? 'CREATING…' : 'CREATE ANYWAY'}
                     </button>
                   </div>
