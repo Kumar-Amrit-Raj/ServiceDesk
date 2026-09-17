@@ -34,14 +34,22 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
-function historyMessage(item) {
+function historyAgentLabel(value, agents) {
+  if (!value) return 'Unassigned';
+  const agent = agents.find((candidate) => String(candidate.id) === String(value));
+  return agent ? agent.name : `agent #${value}`;
+}
+
+function historyMessage(item, agents) {
   if (item.field_name === 'status') {
     return `Status changed from ${formatStatus(item.old_value)} to ${formatStatus(item.new_value)}.`;
   }
   if (item.field_name === 'assigned_to') {
-    if (!item.old_value && item.new_value) return `Ticket assigned to agent #${item.new_value}.`;
-    if (item.old_value && !item.new_value) return 'Ticket assignment cleared.';
-    return `Assignment changed from agent #${item.old_value} to agent #${item.new_value}.`;
+    const oldLabel = historyAgentLabel(item.old_value, agents);
+    const newLabel = historyAgentLabel(item.new_value, agents);
+    if (!item.old_value && item.new_value) return `Ticket assigned to ${newLabel}.`;
+    if (item.old_value && !item.new_value) return `Ticket assignment cleared from ${oldLabel}.`;
+    return `Assignment changed from ${oldLabel} to ${newLabel}.`;
   }
   return `${item.field_name} updated.`;
 }
@@ -535,7 +543,7 @@ export default function HomePage({ user, onLogout }) {
                     <article className="history-item" key={item.id}>
                       <span className="history-mark" aria-hidden="true" />
                       <div>
-                        <strong>{historyMessage(item)}</strong>
+                        <strong>{historyMessage(item, agents)}</strong>
                         <span>{item.changed_by_name} · {formatDate(item.created_at)}</span>
                       </div>
                     </article>
