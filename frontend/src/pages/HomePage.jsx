@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { getApiError } from '../services/api.js';
 import AdminUserManagement from '../components/AdminUserManagement.jsx';
 import AdminCategoryManagement from '../components/AdminCategoryManagement.jsx';
+import SupportAnalytics from '../components/SupportAnalytics.jsx';
 import {
   checkDuplicateTickets,
   createTicket,
@@ -359,6 +360,8 @@ export default function HomePage({ user, onLogout }) {
           <article><span>RESOLVED / CLOSED</span><strong>{stats.resolved}</strong></article>
           <article><span>TOTAL</span><strong>{tickets.length}</strong></article>
         </section>
+
+        {isStaff && <SupportAnalytics refreshKey={tickets.map((ticket) => `${ticket.id}:${ticket.status}:${ticket.assigned_to ?? ''}`).join('|')} />}
 
         {user.role === 'admin' && (
           <>
