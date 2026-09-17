@@ -101,14 +101,7 @@ export default function App() {
   }
 
   if (user) {
-    return (
-      <main className="signed-in-page">
-        <section className="signed-in-card">
-          <div className="signed-in-brand">ServiceDesk <span>IT SUPPORT WORKSPACE</span></div>
-          <HomePage user={user} onLogout={logout} />
-        </section>
-      </main>
-    );
+    return <HomePage user={user} onLogout={logout} />;
   }
 
   const content = page === 'register'
