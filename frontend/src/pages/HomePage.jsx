@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getApiError } from '../services/api.js';
-import { createTicket, fetchCategories, fetchTickets } from '../services/tickets.js';
+import {
+  createTicket,
+  createTicketComment,
+  fetchCategories,
+  fetchSupportAgents,
+  fetchTicket,
+  fetchTicketComments,
+  fetchTicketHistory,
+  fetchTickets,
+  updateTicket,
+} from '../services/tickets.js';
 import '../styles/dashboard.css';
 
 const EMPTY_FORM = {
@@ -11,7 +21,7 @@ const EMPTY_FORM = {
 };
 
 function formatStatus(status) {
-  return status.replace('_', ' ');
+  return String(status ?? '').replace('_', ' ');
 }
 
 function formatDate(value) {
@@ -24,7 +34,20 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
+function historyMessage(item) {
+  if (item.field_name === 'status') {
+    return `Status changed from ${formatStatus(item.old_value)} to ${formatStatus(item.new_value)}.`;
+  }
+  if (item.field_name === 'assigned_to') {
+    if (!item.old_value && item.new_value) return `Ticket assigned to agent #${item.new_value}.`;
+    if (item.old_value && !item.new_value) return 'Ticket assignment cleared.';
+    return `Assignment changed from agent #${item.old_value} to agent #${item.new_value}.`;
+  }
+  return `${item.field_name} updated.`;
+}
+
 export default function HomePage({ user, onLogout }) {
+  const isStaff = user.role === 'support' || user.role === 'admin';
   const [categories, setCategories] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +56,16 @@ export default function HomePage({ user, onLogout }) {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [filters, setFilters] = useState({ status: '', priority: '', search: '' });
+
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [commentBusy, setCommentBusy] = useState(false);
+  const [workflowBusy, setWorkflowBusy] = useState(false);
+  const [workflowForm, setWorkflowForm] = useState({ status: 'open', assignedTo: '' });
 
   async function loadTickets(nextFilters = filters) {
     const params = {};
@@ -114,6 +147,86 @@ export default function HomePage({ user, onLogout }) {
       setError(getApiError(requestError));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function openTicket(ticketId) {
+    setDetailLoading(true);
+    setError('');
+    setCommentText('');
+    try {
+      const requests = [
+        fetchTicket(ticketId),
+        fetchTicketComments(ticketId),
+        fetchTicketHistory(ticketId),
+      ];
+      if (isStaff) requests.push(fetchSupportAgents());
+
+      const [ticket, ticketComments, ticketHistory, supportAgents = []] = await Promise.all(requests);
+      setSelectedTicket(ticket);
+      setComments(ticketComments);
+      setHistory(ticketHistory);
+      setAgents(supportAgents);
+      setWorkflowForm({
+        status: ticket.status,
+        assignedTo: ticket.assigned_to ? String(ticket.assigned_to) : '',
+      });
+    } catch (requestError) {
+      setError(getApiError(requestError));
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  function closeTicket() {
+    setSelectedTicket(null);
+    setComments([]);
+    setHistory([]);
+    setAgents([]);
+    setCommentText('');
+  }
+
+  async function handleComment(event) {
+    event.preventDefault();
+    if (!selectedTicket || !commentText.trim()) return;
+    setCommentBusy(true);
+    setError('');
+    try {
+      const comment = await createTicketComment(selectedTicket.id, commentText.trim());
+      setComments((current) => [...current, comment]);
+      setCommentText('');
+    } catch (requestError) {
+      setError(getApiError(requestError));
+    } finally {
+      setCommentBusy(false);
+    }
+  }
+
+  async function handleWorkflowUpdate(event) {
+    event.preventDefault();
+    if (!selectedTicket || !isStaff) return;
+    setWorkflowBusy(true);
+    setError('');
+    try {
+      const ticket = await updateTicket(selectedTicket.id, {
+        status: workflowForm.status,
+        assignedTo: workflowForm.assignedTo ? Number(workflowForm.assignedTo) : null,
+      });
+      setSelectedTicket(ticket);
+      setWorkflowForm({
+        status: ticket.status,
+        assignedTo: ticket.assigned_to ? String(ticket.assigned_to) : '',
+      });
+      const [ticketHistory, refreshedTickets] = await Promise.all([
+        fetchTicketHistory(ticket.id),
+        loadTickets(filters),
+      ]);
+      setHistory(ticketHistory);
+      setTickets(refreshedTickets);
+    } catch (requestError) {
+      setError(getApiError(requestError));
+    } finally {
+      setWorkflowBusy(false);
     }
   }
 
@@ -266,6 +379,7 @@ export default function HomePage({ user, onLogout }) {
                   <th>PRIORITY</th>
                   <th>STATUS</th>
                   <th>TARGET</th>
+                  <th>DETAIL</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,18 +394,157 @@ export default function HomePage({ user, onLogout }) {
                     <td><span className={'priority priority-' + ticket.priority}>{ticket.priority}</span></td>
                     <td><span className={'ticket-status status-' + ticket.status}>{formatStatus(ticket.status)}</span></td>
                     <td>{formatDate(ticket.target_resolution_at)}</td>
+                    <td>
+                      <button className="ticket-view" type="button" onClick={() => openTicket(ticket.id)}>
+                        VIEW
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {!loading && tickets.length === 0 && (
-                  <tr><td colSpan="6" className="empty-tickets">No tickets match this view.</td></tr>
+                  <tr><td colSpan="7" className="empty-tickets">No tickets match this view.</td></tr>
                 )}
                 {loading && (
-                  <tr><td colSpan="6" className="empty-tickets">Loading tickets…</td></tr>
+                  <tr><td colSpan="7" className="empty-tickets">Loading tickets…</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         </section>
+
+        {detailLoading && (
+          <section className="ticket-detail-panel">
+            <p className="detail-loading">Loading ticket workspace…</p>
+          </section>
+        )}
+
+        {!detailLoading && selectedTicket && (
+          <section className="ticket-detail-panel">
+            <div className="ticket-detail-header">
+              <div>
+                <p className="desk-eyebrow">TICKET #{String(selectedTicket.id).padStart(4, '0')}</p>
+                <h2>{selectedTicket.title}</h2>
+              </div>
+              <button className="detail-close" type="button" onClick={closeTicket}>CLOSE VIEW</button>
+            </div>
+
+            <div className="ticket-meta-grid">
+              <article><span>REQUESTER</span><strong>{selectedTicket.requester_name}</strong></article>
+              <article><span>CATEGORY</span><strong>{selectedTicket.category_name}</strong></article>
+              <article><span>PRIORITY</span><strong className={'priority priority-' + selectedTicket.priority}>{selectedTicket.priority}</strong></article>
+              <article><span>STATUS</span><strong className={'ticket-status status-' + selectedTicket.status}>{formatStatus(selectedTicket.status)}</strong></article>
+              <article><span>ASSIGNEE</span><strong>{selectedTicket.assigned_to_name || 'Unassigned'}</strong></article>
+              <article><span>TARGET</span><strong>{formatDate(selectedTicket.target_resolution_at)}</strong></article>
+            </div>
+
+            <div className="ticket-description-block">
+              <span>DESCRIPTION</span>
+              <p>{selectedTicket.description}</p>
+            </div>
+
+            {isStaff && (
+              <form className="workflow-controls" onSubmit={handleWorkflowUpdate}>
+                <div className="workflow-controls-heading">
+                  <div>
+                    <p className="desk-eyebrow">SUPPORT ACTIONS</p>
+                    <h3>Manage workflow</h3>
+                  </div>
+                  <span>Changes are recorded in ticket history.</span>
+                </div>
+                <div className="workflow-fields">
+                  <label>
+                    Status
+                    <select
+                      value={workflowForm.status}
+                      onChange={(event) => setWorkflowForm({ ...workflowForm, status: event.target.value })}
+                    >
+                      <option value="open">Open</option>
+                      <option value="in_progress">In progress</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </label>
+                  <label>
+                    Assign to
+                    <select
+                      value={workflowForm.assignedTo}
+                      onChange={(event) => setWorkflowForm({ ...workflowForm, assignedTo: event.target.value })}
+                    >
+                      <option value="">Unassigned</option>
+                      {agents.map((agent) => (
+                        <option key={agent.id} value={agent.id}>{agent.name} · {agent.role}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="desk-primary" type="submit" disabled={workflowBusy}>
+                    {workflowBusy ? 'SAVING…' : 'SAVE CHANGES'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div className="ticket-detail-columns">
+              <section className="comments-panel">
+                <div className="detail-section-heading">
+                  <div>
+                    <p className="desk-eyebrow">CONVERSATION</p>
+                    <h3>Comments</h3>
+                  </div>
+                  <span>{comments.length}</span>
+                </div>
+
+                <div className="comment-list">
+                  {comments.length === 0 && <p className="detail-empty">No comments yet.</p>}
+                  {comments.map((comment) => (
+                    <article className="comment-item" key={comment.id}>
+                      <div>
+                        <strong>{comment.author_name}</strong>
+                        <span>{comment.author_role} · {formatDate(comment.created_at)}</span>
+                      </div>
+                      <p>{comment.message}</p>
+                    </article>
+                  ))}
+                </div>
+
+                <form className="comment-form" onSubmit={handleComment}>
+                  <textarea
+                    required
+                    maxLength={2000}
+                    rows={3}
+                    value={commentText}
+                    onChange={(event) => setCommentText(event.target.value)}
+                    placeholder="Add a useful update or troubleshooting note…"
+                  />
+                  <button className="desk-primary" type="submit" disabled={commentBusy || !commentText.trim()}>
+                    {commentBusy ? 'POSTING…' : 'ADD COMMENT'}
+                  </button>
+                </form>
+              </section>
+
+              <section className="history-panel">
+                <div className="detail-section-heading">
+                  <div>
+                    <p className="desk-eyebrow">ACTIVITY</p>
+                    <h3>Ticket history</h3>
+                  </div>
+                  <span>{history.length}</span>
+                </div>
+                <div className="history-list">
+                  {history.length === 0 && <p className="detail-empty">No workflow changes yet.</p>}
+                  {history.map((item) => (
+                    <article className="history-item" key={item.id}>
+                      <span className="history-mark" aria-hidden="true" />
+                      <div>
+                        <strong>{historyMessage(item)}</strong>
+                        <span>{item.changed_by_name} · {formatDate(item.created_at)}</span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </section>
+        )}
       </section>
     </main>
   );
