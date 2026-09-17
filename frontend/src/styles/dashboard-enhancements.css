@@ -187,11 +187,23 @@
     width: 110px;
   }
 
+  /* Keep the workspace label visible in split-screen/tablet widths. */
+  .desk-brand span {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
   .desk-stats article,
   .desk-stats article:nth-child(2),
   .desk-stats article:nth-child(-n+2) {
     border-right: 1px solid #d9dad4;
     border-bottom: 1px solid #d9dad4;
+  }
+}
+
+@media (max-width: 700px) {
+  .desk-brand span {
+    display: none;
   }
 }
 
