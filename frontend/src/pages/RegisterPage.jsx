@@ -3,10 +3,11 @@ import AuthForm from '../components/AuthForm.jsx';
 export default function RegisterPage({ onRegistered, onLogin }) {
   return (
     <>
-      <h2>Create your account</h2>
-      <p className="subtitle">Register as a ServiceDesk user.</p>
+      <p className="auth-eyebrow">CREATE ACCOUNT</p>
+      <h1 className="auth-title">Set up your ServiceDesk access.</h1>
+      <p className="auth-subtitle">Create an account to report issues and follow support requests from one workspace.</p>
       <AuthForm mode="register" onSuccess={onRegistered} />
-      <p className="note">Already registered? <button className="link" onClick={onLogin}>Log in</button></p>
+      <p className="auth-switch">Already registered? <button className="link" onClick={onLogin}>Sign in</button></p>
     </>
   );
 }
