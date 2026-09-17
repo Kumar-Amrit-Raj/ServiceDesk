@@ -175,6 +175,58 @@
   color: #e95616;
 }
 
+/* Separate the ticket workspace into clearly readable functional sections. */
+.ticket-description-block {
+  margin: 14px;
+  padding: 22px 24px;
+  border: 1px solid #ead9aa;
+  border-left: 4px solid #d99a18;
+  background: #fffdf5;
+  box-shadow: 0 4px 12px rgba(23, 24, 20, 0.035);
+}
+
+.ticket-description-block > span {
+  color: #84610b;
+}
+
+.workflow-controls {
+  margin: 0 14px 14px;
+  border: 1px solid #f0c9b5;
+  border-left: 4px solid #ff651f;
+  background: #fff8f3;
+  box-shadow: 0 4px 12px rgba(23, 24, 20, 0.035);
+}
+
+.ticket-detail-columns {
+  gap: 14px;
+  padding: 0 14px 14px;
+  background: #f3f3f0;
+}
+
+.comments-panel,
+.history-panel {
+  border: 1px solid #d9dad4;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(23, 24, 20, 0.035);
+}
+
+.comments-panel {
+  border-left: 4px solid #3f79ad;
+  border-right: 1px solid #d9dad4;
+}
+
+.comments-panel .desk-eyebrow {
+  color: #386b9b;
+}
+
+.history-panel {
+  border-left: 4px solid #4e855f;
+}
+
+.history-panel .desk-eyebrow {
+  color: #3f7553;
+}
+
 @media (max-width: 980px) {
   .desk-header,
   .auth-topbar {
@@ -232,5 +284,16 @@
 
   .desk-stats {
     gap: 8px;
+  }
+
+  .ticket-description-block,
+  .workflow-controls {
+    margin-inline: 10px;
+  }
+
+  .ticket-detail-columns {
+    gap: 10px;
+    padding-inline: 10px;
+    padding-bottom: 10px;
   }
 }
