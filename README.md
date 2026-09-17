@@ -29,7 +29,7 @@ Ticket CRUD, assignment, comments, search/filtering, history recording, dashboar
 
 ```text
 ServiceDesk/
-├── client/
+├── frontend/
 │   ├── src/
 │   │   ├── components/AuthForm.jsx
 │   │   ├── pages/
@@ -44,7 +44,7 @@ ServiceDesk/
 │   ├── vite.config.js
 │   ├── package.json
 │   └── package-lock.json
-├── server/
+├── backend/
 │   ├── src/
 │   │   ├── config/
 │   │   │   ├── auth.js
@@ -85,15 +85,15 @@ ServiceDesk/
 After cloning the repository, run from its root:
 
 ```sh
-cd client
+cd frontend
 npm ci
-cd ../server
+cd ../backend
 npm ci
 ```
 
 ### 2. Configure the server
 
-Keep your existing `server/.env`. For a fresh clone only, copy `server/.env.example` to `server/.env` and configure:
+Keep your existing `backend/.env`. For a fresh clone only, copy `backend/.env.example` to `backend/.env` and configure:
 
 - `PORT=5000`
 - `DATABASE_URL`: `postgresql://<username>:<password>@localhost:5432/servicedesk`
@@ -111,7 +111,7 @@ Only for a fresh, empty installation, from the repository root:
 
 ```sh
 psql -U postgres -c "CREATE DATABASE servicedesk;"
-psql -U postgres -d servicedesk -v ON_ERROR_STOP=1 -f server/src/database/schema.sql
+psql -U postgres -d servicedesk -v ON_ERROR_STOP=1 -f backend/src/database/schema.sql
 ```
 
 The schema is a one-time initialization file, not a migration script. No tables are recreated by application startup or the tests. Future ticket update logic will explicitly maintain `updated_at`.
@@ -121,12 +121,12 @@ The schema is a one-time initialization file, not a migration script. No tables 
 In separate terminals, starting from the repository root:
 
 ```sh
-cd server
+cd backend
 npm run dev
 ```
 
 ```sh
-cd client
+cd frontend
 npm run dev
 ```
 
@@ -137,15 +137,15 @@ Vite proxies `/api` to `http://localhost:5000`. Express CORS permits `http://loc
 ### Build and server start
 
 ```sh
-# From client/
+# From frontend/
 npm run build
 npm run preview
 
-# From server/
+# From backend/
 npm start
 ```
 
-The client build is written to `client/dist`. Use `npm run dev` for the documented development API proxy. Production deployment and API routing are not configured yet.
+The frontend build is written to `frontend/dist`. Use `npm run dev` for the documented development API proxy. Production deployment and API routing are not configured yet.
 
 ## API endpoints
 
@@ -168,7 +168,7 @@ Logout removes the browser's token. Tokens are not revoked server-side and remai
 
 ## Verification
 
-From `server/`, with the local PostgreSQL service running and `.env` configured:
+From `backend/`, with the local PostgreSQL service running and `.env` configured:
 
 ```sh
 npm test
@@ -176,4 +176,4 @@ npm test
 
 The Node.js built-in test runner exercises registration, validation, stored password hashing, duplicate emails, login failures, JWT expiry/signature validation, safe profile responses, current database roles, authorization middleware, deleted-user sessions, and the health endpoint. It creates a uniquely named test user, changes only that user's role, and deletes that user afterward. It does not drop or recreate tables. Interrupted runs may leave an `auth-test-...@example.com` user behind.
 
-From `client/`, run `npm run build` to verify the production bundle.
+From `frontend/`, run `npm run build` to verify the production bundle.
