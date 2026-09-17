@@ -1,22 +1,22 @@
 :root {
   font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
-  color: #f0eee7;
-  background: #151613;
+  color: #171814;
+  background: #f3f3f0;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   line-height: 1.5;
-  --surface: #151613;
-  --surface-raised: #1c1d19;
-  --surface-soft: #20211d;
-  --border: #34352f;
-  --border-strong: #46473f;
-  --text: #f2f0e9;
-  --muted: #96978f;
-  --muted-strong: #b7b8b0;
+  --surface: #f3f3f0;
+  --surface-raised: #ffffff;
+  --surface-soft: #f7f7f4;
+  --border: #d9dad4;
+  --border-strong: #c5c7c0;
+  --text: #171814;
+  --muted: #7d7f78;
+  --muted-strong: #5e6059;
   --accent: #ff651f;
   --accent-hover: #e95616;
-  --danger: #ff6a5b;
-  --success: #77b58c;
+  --danger: #b9463d;
+  --success: #4f7a5e;
 }
 
 * { box-sizing: border-box; }
@@ -78,10 +78,12 @@ button { cursor: pointer; }
   gap: 34px;
   min-width: 0;
   padding: 0 clamp(36px, 5vw, 78px);
-  border-bottom: 1px solid #2e2f2a;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.76);
 }
 
 .auth-topbar strong {
+  color: var(--text);
   font-family: "IBM Plex Mono", Consolas, monospace;
   font-size: 1.05rem;
   letter-spacing: 0.01em;
@@ -97,7 +99,7 @@ button { cursor: pointer; }
 }
 
 .auth-topbar span {
-  color: #777970;
+  color: #85877f;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -124,7 +126,7 @@ button { cursor: pointer; }
   margin: 0 0 18px;
   color: var(--accent);
   font-size: 0.67rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.05em;
 }
 
@@ -163,9 +165,9 @@ button { cursor: pointer; }
 .auth-form label {
   display: block;
   margin-bottom: 15px;
-  color: #a4a59d;
+  color: #696b64;
   font-size: 0.66rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -179,12 +181,12 @@ button { cursor: pointer; }
   border: 1px solid var(--border-strong);
   border-radius: 0;
   outline: none;
-  background: #1d1e1a;
+  background: #ffffff;
   color: var(--text);
   caret-color: var(--accent);
 }
 
-.auth-form input::placeholder { color: #6f7169; }
+.auth-form input::placeholder { color: #a0a29b; }
 
 .auth-form input:focus {
   border-color: var(--accent);
@@ -196,8 +198,8 @@ button { cursor: pointer; }
 .auth-form input:-webkit-autofill:focus,
 .auth-form input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--text);
-  -webkit-box-shadow: 0 0 0 1000px #1d1e1a inset;
-  box-shadow: 0 0 0 1000px #1d1e1a inset;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
   caret-color: var(--accent);
   transition: background-color 9999s ease-out 0s;
 }
@@ -236,13 +238,13 @@ button:disabled {
 
 button:focus-visible,
 input:focus-visible {
-  outline: 2px solid #f7b188;
+  outline: 2px solid #f39a6d;
   outline-offset: 3px;
 }
 
 .auth-switch {
   margin: 17px 0 0;
-  color: #9a9b93;
+  color: #73756e;
   font-size: 0.84rem;
 }
 
@@ -251,7 +253,7 @@ input:focus-visible {
   border: 0;
   padding: 0;
   background: transparent;
-  color: #d5d4cd;
+  color: #3f413c;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -260,7 +262,7 @@ input:focus-visible {
 
 .password-help {
   margin: -4px 0 14px;
-  color: #85877f;
+  color: #7d7f78;
   font-size: 0.76rem;
 }
 
@@ -269,8 +271,9 @@ input:focus-visible {
   min-width: 0;
   justify-self: end;
   padding: clamp(24px, 2.4vw, 34px);
-  border: 1px solid #30312c;
-  background: #181916;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: 0 18px 48px rgba(22, 24, 20, 0.06);
 }
 
 .workflow-panel h2 {
@@ -285,7 +288,7 @@ input:focus-visible {
 .workflow-intro {
   max-width: 500px;
   margin: 12px 0 0;
-  color: #9a9c94;
+  color: var(--muted-strong);
   font-size: 0.85rem;
   line-height: 1.42;
 }
@@ -293,7 +296,7 @@ input:focus-visible {
 .workflow-divider {
   height: 1px;
   margin: 17px 0 14px;
-  background: #30312c;
+  background: var(--border);
 }
 
 .workflow-steps {
@@ -308,8 +311,8 @@ input:focus-visible {
   align-items: start;
   min-height: 60px;
   padding: 12px 14px;
-  border: 1px solid #35362f;
-  border-left: 2px solid #5b3322;
+  border: 1px solid var(--border);
+  border-left: 2px solid #f0a17b;
   background: var(--surface-soft);
 }
 
@@ -322,14 +325,14 @@ input:focus-visible {
 .workflow-step strong {
   display: block;
   margin-bottom: 2px;
-  color: #e1dfd8;
+  color: #2a2c27;
   font-size: 0.68rem;
   letter-spacing: 0.05em;
 }
 
 .workflow-step p {
   margin: 0;
-  color: #a7a9a1;
+  color: #70726b;
   font-size: 0.81rem;
   line-height: 1.34;
 }
@@ -342,15 +345,15 @@ input:focus-visible {
 }
 
 .status {
-  border: 1px solid #394139;
-  background: #1b211c;
-  color: #a9c5b0;
+  border: 1px solid #c9d7cc;
+  background: #f2f7f3;
+  color: #42634d;
 }
 
 .error {
-  border: 1px solid #5a332e;
-  background: #251a18;
-  color: #ff9b8f;
+  border: 1px solid #e1c4c0;
+  background: #fff5f3;
+  color: #a83c34;
 }
 
 /* Signed-in placeholder is also full-bleed so there is no temporary card-in-a-page look. */
@@ -391,27 +394,27 @@ input:focus-visible {
 
 .secondary {
   margin-top: 12px;
-  border: 1px solid #4a4b44 !important;
-  background: transparent !important;
-  color: #d1d0c9 !important;
+  border: 1px solid var(--border-strong) !important;
+  background: #ffffff !important;
+  color: #343631 !important;
 }
 
 .secondary:hover {
-  border-color: #73746b !important;
-  background: #20211d !important;
+  border-color: #969891 !important;
+  background: #f7f7f4 !important;
 }
 
 .signed-in-brand {
   margin-bottom: 34px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #34352f;
+  border-bottom: 1px solid var(--border);
   font-family: "IBM Plex Mono", Consolas, monospace;
   font-weight: 800;
 }
 
 .signed-in-brand span {
   margin-left: 18px;
-  color: #7f8179;
+  color: #85877f;
   font-size: 0.65rem;
   letter-spacing: 0.05em;
 }
@@ -436,7 +439,7 @@ input:focus-visible {
 
 .profile dt {
   font-family: "IBM Plex Mono", Consolas, monospace;
-  color: #8f9189;
+  color: #777972;
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
