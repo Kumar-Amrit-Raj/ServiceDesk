@@ -28,7 +28,7 @@ const EMPTY_FORM = {
   priority: 'medium',
 };
 
-const EMPTY_FILTERS = { status: '', priority: '', sla: '', search: '' };
+const EMPTY_FILTERS = { status: '', priority: '', categoryId: '', assigneeId: '', sla: '', search: '' };
 
 function formatStatus(status) {
   return String(status ?? '').replace('_', ' ');
@@ -107,6 +107,8 @@ export default function HomePage({ user, onLogout }) {
     const params = {};
     if (nextFilters.status) params.status = nextFilters.status;
     if (nextFilters.priority) params.priority = nextFilters.priority;
+    if (nextFilters.categoryId) params.categoryId = nextFilters.categoryId;
+    if (isStaff && nextFilters.assigneeId) params.assigneeId = nextFilters.assigneeId;
     if (nextFilters.sla) params.sla = nextFilters.sla;
     if (nextFilters.search.trim()) params.search = nextFilters.search.trim();
     return fetchTickets(params);
@@ -117,11 +119,15 @@ export default function HomePage({ user, onLogout }) {
     setLoading(true);
     setError('');
 
-    Promise.all([fetchCategories(), fetchTickets()])
-      .then(([categoryData, ticketData]) => {
+    const requests = [fetchCategories(), fetchTickets()];
+    if (isStaff) requests.push(fetchSupportAgents());
+
+    Promise.all(requests)
+      .then(([categoryData, ticketData, supportAgents = []]) => {
         if (!active) return;
         setCategories(categoryData);
         setTickets(ticketData);
+        if (isStaff) setAgents(supportAgents);
       })
       .catch((requestError) => {
         if (active) setError(getApiError(requestError));
@@ -272,7 +278,6 @@ export default function HomePage({ user, onLogout }) {
     setSelectedTicket(null);
     setComments([]);
     setHistory([]);
-    setAgents([]);
     setCommentText('');
   }
 
@@ -565,6 +570,29 @@ export default function HomePage({ user, onLogout }) {
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
+              <select
+                aria-label="Filter by category"
+                value={filters.categoryId}
+                onChange={(event) => setFilters({ ...filters, categoryId: event.target.value })}
+              >
+                <option value="">All categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
+                ))}
+              </select>
+              {isStaff && (
+                <select
+                  aria-label="Filter by assignee"
+                  value={filters.assigneeId}
+                  onChange={(event) => setFilters({ ...filters, assigneeId: event.target.value })}
+                >
+                  <option value="">All assignees</option>
+                  <option value="unassigned">Unassigned</option>
+                  {agents.map((agent) => (
+                    <option key={agent.id} value={agent.id}>{agent.name} · {agent.role}</option>
+                  ))}
+                </select>
+              )}
               <select
                 aria-label="Filter by SLA state"
                 value={filters.sla}
