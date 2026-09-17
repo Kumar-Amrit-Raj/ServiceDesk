@@ -188,6 +188,106 @@ test('ticket integration against local PostgreSQL', async (t) => {
       assert.equal(detail.status, 200);
       assert.equal(detail.body.ticket.id, firstTicket.id);
     });
+
+    await t.test('only support and admin roles can list agents or manage workflow', async () => {
+      assert.equal((await request('/api/tickets/support-agents', { bearer: firstToken })).status, 403);
+      assert.equal((await request('/api/tickets/' + firstTicket.id, {
+        method: 'PATCH',
+        bearer: firstToken,
+        body: { status: 'in_progress' },
+      })).status, 403);
+
+      const agents = await request('/api/tickets/support-agents', { bearer: supportToken });
+      assert.equal(agents.status, 200);
+      assert.ok(agents.body.agents.some((agent) => agent.id === supportUser.id && agent.role === 'support'));
+    });
+
+    await t.test('comments are visible only to ticket participants and support staff', async () => {
+      const userComment = await request('/api/tickets/' + firstTicket.id + '/comments', {
+        method: 'POST',
+        bearer: firstToken,
+        body: { message: 'The issue still happens after restarting.' },
+      });
+      assert.equal(userComment.status, 201);
+      assert.equal(userComment.body.comment.user_id, firstUser.id);
+      assert.equal(userComment.body.comment.author_role, 'user');
+
+      assert.equal((await request('/api/tickets/' + firstTicket.id + '/comments', { bearer: secondToken })).status, 403);
+      assert.equal((await request('/api/tickets/' + firstTicket.id + '/comments', {
+        method: 'POST',
+        bearer: secondToken,
+        body: { message: 'Should not be allowed' },
+      })).status, 403);
+
+      const supportComment = await request('/api/tickets/' + firstTicket.id + '/comments', {
+        method: 'POST',
+        bearer: supportToken,
+        body: { message: 'Support is checking the network configuration.' },
+      });
+      assert.equal(supportComment.status, 201);
+      assert.equal(supportComment.body.comment.user_id, supportUser.id);
+      assert.equal(supportComment.body.comment.author_role, 'support');
+
+      const list = await request('/api/tickets/' + firstTicket.id + '/comments', { bearer: firstToken });
+      assert.equal(list.status, 200);
+      assert.equal(list.body.comments.length, 2);
+      assert.deepEqual(list.body.comments.map((comment) => comment.user_id), [firstUser.id, supportUser.id]);
+
+      assert.equal((await request('/api/tickets/' + firstTicket.id + '/comments', {
+        method: 'POST',
+        bearer: firstToken,
+        body: { message: ' '.repeat(3) },
+      })).status, 400);
+    });
+
+    await t.test('support can assign tickets and change status with history', async () => {
+      assert.equal((await request('/api/tickets/' + firstTicket.id, {
+        method: 'PATCH',
+        bearer: supportToken,
+        body: { assignedTo: firstUser.id },
+      })).status, 400);
+
+      const updated = await request('/api/tickets/' + firstTicket.id, {
+        method: 'PATCH',
+        bearer: supportToken,
+        body: { assignedTo: supportUser.id, status: 'in_progress' },
+      });
+      assert.equal(updated.status, 200);
+      assert.equal(updated.body.ticket.assigned_to, supportUser.id);
+      assert.equal(updated.body.ticket.assigned_to_name, 'Ticket Support');
+      assert.equal(updated.body.ticket.status, 'in_progress');
+      assert.equal(updated.body.ticket.resolved_at, null);
+
+      const history = await request('/api/tickets/' + firstTicket.id + '/history', { bearer: firstToken });
+      assert.equal(history.status, 200);
+      assert.equal(history.body.history.length, 2);
+      assert.deepEqual(new Set(history.body.history.map((entry) => entry.field_name)), new Set(['status', 'assigned_to']));
+      assert.ok(history.body.history.every((entry) => entry.changed_by === supportUser.id));
+    });
+
+    await t.test('resolved timestamp is set on resolution and cleared when reopened', async () => {
+      const resolved = await request('/api/tickets/' + firstTicket.id, {
+        method: 'PATCH',
+        bearer: supportToken,
+        body: { status: 'resolved' },
+      });
+      assert.equal(resolved.status, 200);
+      assert.ok(resolved.body.ticket.resolved_at);
+
+      const reopened = await request('/api/tickets/' + firstTicket.id, {
+        method: 'PATCH',
+        bearer: supportToken,
+        body: { status: 'open', assignedTo: null },
+      });
+      assert.equal(reopened.status, 200);
+      assert.equal(reopened.body.ticket.status, 'open');
+      assert.equal(reopened.body.ticket.assigned_to, null);
+      assert.equal(reopened.body.ticket.resolved_at, null);
+
+      const history = await request('/api/tickets/' + firstTicket.id + '/history', { bearer: supportToken });
+      assert.equal(history.status, 200);
+      assert.equal(history.body.history.length, 5);
+    });
   } finally {
     if (categoryId) {
       await pool.query('DELETE FROM tickets WHERE category_id = $1', [categoryId]);
