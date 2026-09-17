@@ -16,7 +16,8 @@ CREATE UNIQUE INDEX users_email_unique ON users (lower(email));
 
 CREATE TABLE categories (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE CHECK (btrim(name) <> '')
+    name VARCHAR(100) NOT NULL UNIQUE CHECK (btrim(name) <> ''),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE tickets (
