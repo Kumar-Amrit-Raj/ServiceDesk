@@ -96,8 +96,13 @@ test('SLA integration against local PostgreSQL', async (t) => {
     });
 
     await t.test('overdue SLA state can be filtered and invalid filters are rejected', async () => {
+      // Preserve the database rule that an SLA target cannot predate ticket creation.
+      // Moving both timestamps back simulates a legitimately old ticket whose target has passed.
       await pool.query(
-        `UPDATE tickets SET target_resolution_at = CURRENT_TIMESTAMP - INTERVAL '1 hour' WHERE id = $1`,
+        `UPDATE tickets
+         SET created_at = CURRENT_TIMESTAMP - INTERVAL '2 hours',
+             target_resolution_at = CURRENT_TIMESTAMP - INTERVAL '1 hour'
+         WHERE id = $1`,
         [trackedTicket.id],
       );
 
