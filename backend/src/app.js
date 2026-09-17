@@ -28,7 +28,7 @@ if (isProduction) {
   const frontendDist = path.resolve(currentDirectory, '../../frontend/dist');
 
   app.use(express.static(frontendDist));
-  app.get(/^(?!\\/api).*/, (req, res) => {
+  app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(path.join(frontendDist, 'index.html'));
   });
 }
