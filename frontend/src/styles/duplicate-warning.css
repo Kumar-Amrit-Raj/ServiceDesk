@@ -1,0 +1,131 @@
+.duplicate-warning {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid #e6b98f;
+  border-left: 4px solid #ff651f;
+  background: #fff8f2;
+}
+
+.duplicate-warning-heading,
+.duplicate-warning-actions,
+.duplicate-match {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.duplicate-warning-heading > div {
+  display: grid;
+  gap: 4px;
+}
+
+.duplicate-warning-heading span,
+.duplicate-match > div > span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: #c34816;
+}
+
+.duplicate-warning-heading h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #24241f;
+}
+
+.duplicate-warning-heading > strong {
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  border: 1px solid #e6b98f;
+  background: #fff;
+  font-size: 12px;
+  color: #7b421f;
+}
+
+.duplicate-warning-copy,
+.duplicate-warning-actions > span {
+  margin: 0;
+  color: #6e6259;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.duplicate-match-list {
+  display: grid;
+  gap: 9px;
+}
+
+.duplicate-match {
+  padding: 14px 15px;
+  border: 1px solid #dedfd8;
+  background: #fff;
+}
+
+.duplicate-match > div {
+  display: grid;
+  gap: 4px;
+}
+
+.duplicate-match strong {
+  color: #20201d;
+  font-size: 14px;
+}
+
+.duplicate-match small {
+  color: #6f7069;
+  font-size: 11px;
+}
+
+.duplicate-match button,
+.duplicate-warning-actions button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #c9cac4;
+  background: #fff;
+  color: #252520;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+
+.duplicate-match button:hover {
+  border-color: #ff651f;
+  color: #c34816;
+}
+
+.duplicate-warning-actions {
+  padding-top: 2px;
+}
+
+.duplicate-warning-actions button {
+  border-color: #ff651f;
+  background: #ff651f;
+  color: #171714;
+}
+
+.duplicate-warning-actions button:disabled,
+.duplicate-match button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .duplicate-warning-heading,
+  .duplicate-warning-actions,
+  .duplicate-match {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .duplicate-warning-heading > strong,
+  .duplicate-match button,
+  .duplicate-warning-actions button {
+    align-self: flex-start;
+  }
+}
