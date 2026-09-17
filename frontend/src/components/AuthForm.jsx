@@ -25,26 +25,52 @@ export default function AuthForm({ mode, onSuccess }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="auth-form" onSubmit={handleSubmit}>
       {error && <p className="error" role="alert">{error}</p>}
       <fieldset disabled={busy}>
-        {registering && <label htmlFor="name">Name
-          <input id="name" name="name" autoComplete="name" required maxLength={100}
-            value={name} onChange={(event) => setName(event.target.value)} />
-        </label>}
+        {registering && (
+          <label htmlFor="name">Name
+            <input
+              id="name"
+              name="name"
+              autoComplete="name"
+              required
+              maxLength={100}
+              placeholder="Your name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </label>
+        )}
         <label htmlFor="email">Email
-          <input id="email" name="email" type="email" autoComplete="email" required maxLength={255}
-            value={email} onChange={(event) => setEmail(event.target.value)} />
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            maxLength={255}
+            placeholder="name@example.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
         </label>
         <label htmlFor="password">Password
-          <input id="password" name="password" type="password" required
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
             autoComplete={registering ? 'new-password' : 'current-password'}
             minLength={registering ? 8 : undefined}
             aria-describedby={registering ? 'password-help' : undefined}
-            value={password} onChange={(event) => setPassword(event.target.value)} />
+            placeholder="••••••••••••"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
         </label>
-        {registering && <p id="password-help" className="note">Use at least 8 characters (maximum 72 UTF-8 bytes).</p>}
-        <button type="submit">{busy ? 'Please wait…' : registering ? 'Create account' : 'Log in'}</button>
+        {registering && <p id="password-help" className="password-help">Use at least 8 characters (maximum 72 UTF-8 bytes).</p>}
+        <button className="auth-submit" type="submit">{busy ? 'PLEASE WAIT…' : registering ? 'CREATE ACCOUNT' : 'SIGN IN'}</button>
       </fieldset>
     </form>
   );
