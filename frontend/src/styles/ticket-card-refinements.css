@@ -1,0 +1,125 @@
+/* Ticket detail refinement: distinct functional cards without a single enclosing box. */
+.ticket-detail-panel {
+  margin-top: 28px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.ticket-detail-header {
+  border: 1px solid #d9dad4;
+  border-bottom: 0;
+  background: linear-gradient(90deg, #fff8f3 0%, #ffffff 45%);
+  box-shadow: inset 4px 0 0 #ff651f;
+}
+
+.ticket-meta-grid {
+  border: 1px solid #d9dad4;
+  border-top: 0;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(23, 24, 20, 0.04);
+}
+
+.ticket-description-block {
+  margin: 18px 0 0;
+  padding: 24px 26px;
+  border: 1px solid #d9dad4;
+  border-top: 3px solid #d99a18;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(23, 24, 20, 0.045);
+}
+
+.ticket-description-block > span {
+  color: #84610b;
+}
+
+.workflow-controls {
+  margin: 18px 0 0;
+  padding: 24px 26px;
+  border: 1px solid #d9dad4;
+  border-top: 3px solid #ff651f;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(23, 24, 20, 0.045);
+}
+
+.ticket-detail-columns {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 0;
+  background: transparent;
+  align-items: stretch;
+}
+
+.comments-panel,
+.history-panel {
+  min-width: 0;
+  border: 1px solid #d9dad4;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(23, 24, 20, 0.045);
+}
+
+.comments-panel {
+  border-top: 3px solid #3f79ad;
+  border-right: 1px solid #d9dad4;
+}
+
+.history-panel {
+  border-top: 3px solid #4e855f;
+}
+
+.comments-panel .desk-eyebrow {
+  color: #386b9b;
+}
+
+.history-panel .desk-eyebrow {
+  color: #3f7553;
+}
+
+/* Make the table column header visually distinct from the page background. */
+.ticket-table th {
+  background: #e8e7e1;
+  color: #494b45;
+  border-bottom: 1px solid #cfd0c9;
+}
+
+.ticket-table tbody tr {
+  background: #ffffff;
+}
+
+.ticket-table tbody tr:hover {
+  background: #fff8f3;
+}
+
+@media (max-width: 1100px) {
+  .ticket-detail-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .comments-panel,
+  .history-panel {
+    border: 1px solid #d9dad4;
+  }
+
+  .comments-panel {
+    border-top: 3px solid #3f79ad;
+  }
+
+  .history-panel {
+    border-top: 3px solid #4e855f;
+  }
+}
+
+@media (max-width: 640px) {
+  .ticket-description-block,
+  .workflow-controls {
+    margin-top: 14px;
+    padding: 20px;
+  }
+
+  .ticket-detail-columns {
+    gap: 14px;
+    margin-top: 14px;
+  }
+}
