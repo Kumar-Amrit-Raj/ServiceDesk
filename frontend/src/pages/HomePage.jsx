@@ -12,6 +12,7 @@ import {
   updateTicket,
 } from '../services/tickets.js';
 import '../styles/dashboard.css';
+import '../styles/sla.css';
 
 const EMPTY_FORM = {
   title: '',
@@ -20,8 +21,14 @@ const EMPTY_FORM = {
   priority: 'medium',
 };
 
+const EMPTY_FILTERS = { status: '', priority: '', sla: '', search: '' };
+
 function formatStatus(status) {
   return String(status ?? '').replace('_', ' ');
+}
+
+function formatSlaState(state) {
+  return String(state ?? '').replace('_', ' ');
 }
 
 function formatDate(value) {
@@ -32,6 +39,15 @@ function formatDate(value) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value));
+}
+
+function formatSlaTime(minutes) {
+  if (!Number.isFinite(Number(minutes))) return '';
+  const absolute = Math.abs(Number(minutes));
+  const hours = Math.floor(absolute / 60);
+  const mins = absolute % 60;
+  const duration = hours ? `${hours}h${mins ? ` ${mins}m` : ''}` : `${mins}m`;
+  return Number(minutes) < 0 ? `${duration} overdue` : `${duration} remaining`;
 }
 
 function historyAgentLabel(value, agents) {
@@ -66,7 +82,7 @@ export default function HomePage({ user, onLogout }) {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [filters, setFilters] = useState({ status: '', priority: '', search: '' });
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [comments, setComments] = useState([]);
@@ -82,6 +98,7 @@ export default function HomePage({ user, onLogout }) {
     const params = {};
     if (nextFilters.status) params.status = nextFilters.status;
     if (nextFilters.priority) params.priority = nextFilters.priority;
+    if (nextFilters.sla) params.sla = nextFilters.sla;
     if (nextFilters.search.trim()) params.search = nextFilters.search.trim();
     return fetchTickets(params);
   }
@@ -123,6 +140,11 @@ export default function HomePage({ user, onLogout }) {
     resolved: tickets.filter((ticket) => ['resolved', 'closed'].includes(ticket.status)).length,
   }), [tickets]);
 
+  const slaStats = useMemo(() => ({
+    overdue: tickets.filter((ticket) => ticket.sla_state === 'overdue').length,
+    dueSoon: tickets.filter((ticket) => ticket.sla_state === 'due_soon').length,
+  }), [tickets]);
+
   async function handleCreate(event) {
     event.preventDefault();
     setCreating(true);
@@ -158,12 +180,11 @@ export default function HomePage({ user, onLogout }) {
   }
 
   async function clearFilters() {
-    const cleared = { status: '', priority: '', search: '' };
-    setFilters(cleared);
+    setFilters(EMPTY_FILTERS);
     setLoading(true);
     setError('');
     try {
-      setTickets(await loadTickets(cleared));
+      setTickets(await loadTickets(EMPTY_FILTERS));
     } catch (requestError) {
       setError(getApiError(requestError));
     } finally {
@@ -286,6 +307,17 @@ export default function HomePage({ user, onLogout }) {
           <article><span>TOTAL</span><strong>{tickets.length}</strong></article>
         </section>
 
+        {(slaStats.overdue > 0 || slaStats.dueSoon > 0) && (
+          <section className="sla-watch" aria-label="SLA watch">
+            <div>
+              <span className="sla-watch-label">SLA WATCH</span>
+              <strong>{slaStats.overdue} overdue</strong>
+              <span>{slaStats.dueSoon} due soon</span>
+            </div>
+            <p>Due soon means the target resolution time is within the next 4 hours.</p>
+          </section>
+        )}
+
         {error && <p className="desk-error" role="alert">{error}</p>}
 
         {showCreate && (
@@ -385,6 +417,18 @@ export default function HomePage({ user, onLogout }) {
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
+              <select
+                aria-label="Filter by SLA state"
+                value={filters.sla}
+                onChange={(event) => setFilters({ ...filters, sla: event.target.value })}
+              >
+                <option value="">All SLA states</option>
+                <option value="on_track">On track</option>
+                <option value="due_soon">Due soon</option>
+                <option value="overdue">Overdue</option>
+                <option value="met">Met</option>
+                <option value="breached">Breached</option>
+              </select>
               <button type="submit">APPLY</button>
               <button type="button" className="filter-clear" onClick={clearFilters}>CLEAR</button>
             </form>
@@ -399,13 +443,13 @@ export default function HomePage({ user, onLogout }) {
                   <th>CATEGORY</th>
                   <th>PRIORITY</th>
                   <th>STATUS</th>
-                  <th>TARGET</th>
+                  <th>TARGET / SLA</th>
                   <th>DETAIL</th>
                 </tr>
               </thead>
               <tbody>
                 {!loading && tickets.map((ticket) => (
-                  <tr key={ticket.id}>
+                  <tr key={ticket.id} className={ticket.sla_state === 'overdue' ? 'ticket-row-overdue' : ''}>
                     <td className="ticket-id">#{String(ticket.id).padStart(4, '0')}</td>
                     <td>
                       <strong>{ticket.title}</strong>
@@ -414,7 +458,15 @@ export default function HomePage({ user, onLogout }) {
                     <td>{ticket.category_name}</td>
                     <td><span className={'priority priority-' + ticket.priority}>{ticket.priority}</span></td>
                     <td><span className={'ticket-status status-' + ticket.status}>{formatStatus(ticket.status)}</span></td>
-                    <td>{formatDate(ticket.target_resolution_at)}</td>
+                    <td>
+                      <div className="sla-target-cell">
+                        <span>{formatDate(ticket.target_resolution_at)}</span>
+                        <div>
+                          <span className={'sla-badge sla-' + ticket.sla_state}>{formatSlaState(ticket.sla_state)}</span>
+                          <small>{formatSlaTime(ticket.sla_minutes_remaining)}</small>
+                        </div>
+                      </div>
+                    </td>
                     <td>
                       <button className="ticket-view" type="button" onClick={() => openTicket(ticket.id)}>
                         VIEW
@@ -455,7 +507,14 @@ export default function HomePage({ user, onLogout }) {
               <article><span>PRIORITY</span><strong className={'priority priority-' + selectedTicket.priority}>{selectedTicket.priority}</strong></article>
               <article><span>STATUS</span><strong className={'ticket-status status-' + selectedTicket.status}>{formatStatus(selectedTicket.status)}</strong></article>
               <article><span>ASSIGNEE</span><strong>{selectedTicket.assigned_to_name || 'Unassigned'}</strong></article>
-              <article><span>TARGET</span><strong>{formatDate(selectedTicket.target_resolution_at)}</strong></article>
+              <article className="ticket-meta-sla">
+                <span>TARGET / SLA</span>
+                <strong>{formatDate(selectedTicket.target_resolution_at)}</strong>
+                <div>
+                  <span className={'sla-badge sla-' + selectedTicket.sla_state}>{formatSlaState(selectedTicket.sla_state)}</span>
+                  <small>{formatSlaTime(selectedTicket.sla_minutes_remaining)}</small>
+                </div>
+              </article>
             </div>
 
             <div className="ticket-description-block">
