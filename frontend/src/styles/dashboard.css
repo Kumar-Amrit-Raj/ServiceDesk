@@ -46,7 +46,16 @@
 .ticket-status,
 .desk-primary,
 .desk-logout,
-.ticket-filters button {
+.ticket-filters button,
+.ticket-view,
+.detail-close,
+.ticket-meta-grid span,
+.ticket-description-block > span,
+.workflow-controls label,
+.workflow-controls-heading > span,
+.detail-section-heading > span,
+.comment-item span,
+.history-item span {
   font-family: "IBM Plex Mono", Consolas, monospace;
 }
 
@@ -60,7 +69,9 @@
 
 .desk-logout,
 .desk-primary,
-.ticket-filters button {
+.ticket-filters button,
+.ticket-view,
+.detail-close {
   border: 1px solid transparent;
   border-radius: 0;
   font-size: 0.7rem;
@@ -149,7 +160,8 @@
 }
 
 .ticket-create-panel,
-.ticket-panel {
+.ticket-panel,
+.ticket-detail-panel {
   margin-top: 28px;
   border: 1px solid #d9dad4;
   background: #ffffff;
@@ -180,7 +192,9 @@
 .ticket-create-form select,
 .ticket-create-form textarea,
 .ticket-filters input,
-.ticket-filters select {
+.ticket-filters select,
+.workflow-controls select,
+.comment-form textarea {
   width: 100%;
   border: 1px solid #c5c7c0;
   border-radius: 0;
@@ -206,13 +220,16 @@
 
 .ticket-create-form input::placeholder,
 .ticket-create-form textarea::placeholder,
-.ticket-filters input::placeholder { color: #a0a29b; }
+.ticket-filters input::placeholder,
+.comment-form textarea::placeholder { color: #a0a29b; }
 
 .ticket-create-form input:focus,
 .ticket-create-form select:focus,
 .ticket-create-form textarea:focus,
 .ticket-filters input:focus,
-.ticket-filters select:focus {
+.ticket-filters select:focus,
+.workflow-controls select:focus,
+.comment-form textarea:focus {
   border-color: #ff651f;
   box-shadow: 0 0 0 1px #ff651f;
 }
@@ -233,7 +250,7 @@
 .ticket-filters .filter-clear:hover { background: #f7f7f4; }
 
 .ticket-table-wrap { width: 100%; overflow-x: auto; }
-.ticket-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+.ticket-table { width: 100%; border-collapse: collapse; min-width: 980px; }
 .ticket-table th,
 .ticket-table td { padding: 15px 18px; text-align: left; border-bottom: 1px solid #e1e2dc; }
 .ticket-table th { color: #71736c; background: #f7f7f4; font-size: 0.61rem; letter-spacing: 0.06em; }
@@ -243,6 +260,18 @@
 .ticket-table td > strong { display: block; color: #20211d; font-weight: 650; }
 .ticket-requester { display: block; margin-top: 4px; color: #85877f; font-size: 0.75rem; }
 .ticket-id { color: #d84f12 !important; font-family: "IBM Plex Mono", Consolas, monospace; font-size: 0.75rem !important; }
+
+.ticket-view,
+.detail-close {
+  min-height: 32px;
+  padding: 0 11px;
+  border-color: #c7c8c2;
+  background: #ffffff;
+  color: #343631;
+}
+
+.ticket-view:hover,
+.detail-close:hover { border-color: #ff651f; color: #c84b12; background: #fff8f4; }
 
 .priority,
 .ticket-status {
@@ -262,6 +291,181 @@
 .status-closed { color: #70726c; }
 
 .empty-tickets { padding: 34px !important; text-align: center !important; color: #85877f !important; }
+
+.ticket-detail-panel { overflow: hidden; }
+.detail-loading { margin: 0; padding: 28px; color: #777972; }
+
+.ticket-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 26px;
+  border-bottom: 1px solid #d9dad4;
+  background: #fafaf8;
+}
+
+.ticket-detail-header h2 {
+  margin: 0;
+  color: #171814;
+  font-size: clamp(1.4rem, 2.1vw, 2rem);
+  letter-spacing: -0.025em;
+}
+
+.ticket-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-bottom: 1px solid #d9dad4;
+}
+
+.ticket-meta-grid article {
+  min-width: 0;
+  padding: 18px 20px;
+  border-right: 1px solid #e1e2dc;
+}
+
+.ticket-meta-grid article:last-child { border-right: 0; }
+.ticket-meta-grid span,
+.ticket-description-block > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #777972;
+  font-size: 0.59rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.ticket-meta-grid strong { display: block; overflow-wrap: anywhere; color: #242620; font-size: 0.83rem; }
+
+.ticket-description-block {
+  padding: 24px 26px;
+  border-bottom: 1px solid #d9dad4;
+}
+
+.ticket-description-block p {
+  max-width: 980px;
+  margin: 0;
+  color: #4f514b;
+  font-size: 0.94rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.workflow-controls {
+  padding: 24px 26px;
+  border-bottom: 1px solid #d9dad4;
+  background: #f7f7f4;
+}
+
+.workflow-controls-heading,
+.detail-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.workflow-controls-heading { margin-bottom: 18px; }
+.workflow-controls-heading h3,
+.detail-section-heading h3 { margin: 0; color: #171814; font-size: 1.08rem; }
+.workflow-controls-heading > span { color: #777972; font-size: 0.6rem; }
+
+.workflow-fields {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(220px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.workflow-controls label {
+  color: #666861;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.workflow-controls select {
+  height: 42px;
+  margin-top: 7px;
+  padding: 0 11px;
+}
+
+.workflow-fields .desk-primary { min-height: 42px; }
+
+.ticket-detail-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+}
+
+.comments-panel,
+.history-panel { min-width: 0; padding: 24px 26px 28px; }
+.comments-panel { border-right: 1px solid #d9dad4; }
+
+.detail-section-heading {
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.detail-section-heading > span {
+  min-width: 26px;
+  padding: 4px 7px;
+  border: 1px solid #d4d5cf;
+  background: #f7f7f4;
+  color: #62645e;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.comment-list,
+.history-list { display: grid; gap: 10px; }
+
+.comment-item {
+  padding: 14px 15px;
+  border: 1px solid #e1e2dc;
+  background: #fafaf8;
+}
+
+.comment-item > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.comment-item strong { color: #242620; font-size: 0.84rem; }
+.comment-item span,
+.history-item span { color: #85877f; font-size: 0.56rem; }
+.comment-item p { margin: 9px 0 0; color: #50524c; font-size: 0.86rem; line-height: 1.55; white-space: pre-wrap; }
+
+.comment-form { margin-top: 14px; }
+.comment-form textarea { min-height: 88px; padding: 11px 12px; resize: vertical; }
+.comment-form .desk-primary { margin-top: 9px; min-height: 38px; }
+
+.history-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 10px 0;
+}
+
+.history-item + .history-item { border-top: 1px solid #ecece7; }
+.history-mark { width: 8px; height: 8px; margin-top: 5px; background: #ff651f; }
+.history-item strong { display: block; color: #454741; font-size: 0.82rem; line-height: 1.4; }
+.history-item span { display: block; margin-top: 4px; }
+.detail-empty { margin: 0; padding: 18px 0; color: #85877f; font-size: 0.84rem; }
+
+@media (max-width: 1100px) {
+  .ticket-meta-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ticket-meta-grid article:nth-child(3) { border-right: 0; }
+  .ticket-meta-grid article:nth-child(-n+3) { border-bottom: 1px solid #e1e2dc; }
+  .workflow-fields { grid-template-columns: 1fr 1fr; }
+  .workflow-fields .desk-primary { width: max-content; }
+  .ticket-detail-columns { grid-template-columns: 1fr; }
+  .comments-panel { border-right: 0; border-bottom: 1px solid #d9dad4; }
+}
 
 @media (max-width: 980px) {
   .desk-header { padding-inline: 24px; }
@@ -287,4 +491,17 @@
   .ticket-filters { display: grid; grid-template-columns: 1fr 1fr; }
   .ticket-filters input { width: 100%; grid-column: 1 / -1; }
   .ticket-filters select { width: 100%; }
+  .ticket-detail-header { align-items: flex-start; flex-direction: column; padding: 20px; }
+  .ticket-meta-grid { grid-template-columns: 1fr 1fr; }
+  .ticket-meta-grid article { border-right: 1px solid #e1e2dc; border-bottom: 1px solid #e1e2dc; }
+  .ticket-meta-grid article:nth-child(2n) { border-right: 0; }
+  .ticket-meta-grid article:nth-last-child(-n+2) { border-bottom: 0; }
+  .ticket-description-block,
+  .workflow-controls,
+  .comments-panel,
+  .history-panel { padding: 20px; }
+  .workflow-controls-heading { align-items: flex-start; flex-direction: column; }
+  .workflow-fields { grid-template-columns: 1fr; }
+  .workflow-fields .desk-primary { width: 100%; }
+  .comment-item > div { align-items: flex-start; flex-direction: column; gap: 3px; }
 }
