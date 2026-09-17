@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getTicketAnalytics } from '../controllers/analyticsController.js';
 import { checkDuplicateTickets } from '../controllers/duplicateController.js';
 import { suggestResolvedTickets } from '../controllers/solutionController.js';
 import {
@@ -21,6 +22,7 @@ router.route('/').get(listTickets).post(createTicket);
 router.post('/duplicate-check', checkDuplicateTickets);
 router.post('/solution-suggestions', suggestResolvedTickets);
 router.get('/support-agents', authorizeRoles('support', 'admin'), listSupportAgents);
+router.get('/analytics', authorizeRoles('support', 'admin'), getTicketAnalytics);
 router.get('/:id/comments', listTicketComments);
 router.post('/:id/comments', createTicketComment);
 router.get('/:id/history', listTicketHistory);
