@@ -2,20 +2,28 @@
 
 A college portfolio project for managing IT support requests with a React frontend, an Express REST API, and PostgreSQL.
 
-**Status: Under Development — Phase 1 foundation only.**
+**Status: Under Development — Phase 2 authentication and role foundation implemented.**
 
 ## Tech stack
 
 - Frontend: React.js, JavaScript, CSS, Vite, Axios
 - Backend: Node.js, Express.js, dotenv, cors
+- Authentication: bcryptjs password hashing and jsonwebtoken
 - Database: PostgreSQL with the `pg` package
 - Architecture: REST APIs
 
-## Current scope
+## Implemented features
 
-The foundation includes a frontend placeholder with an API connection indicator, `GET /api/health`, a PostgreSQL connection pool, and an initial SQL schema. The health endpoint checks that the API is running; it does not check database connectivity. The server can start before PostgreSQL is configured because the pool connects only when a query is made.
+- Registration with input validation, trimmed names/emails, lowercase emails, and duplicate-email handling.
+- Password hashing with bcrypt (cost 12). Passwords must contain at least 8 characters and fit within bcrypt's 72-byte UTF-8 limit.
+- Public registration always creates a `user`; submitted roles and IDs are ignored.
+- Login with a JWT valid for one day. Its payload contains the user ID plus issued-at and expiry timestamps.
+- Protected profile endpoint that loads the current user and role from PostgreSQL on each request.
+- Reusable `authorizeRoles(...roles)` middleware for future role-restricted routes. It returns 401 without authentication and 403 for a disallowed role; no admin-only business routes exist yet.
+- Minimal registration/login pages, a signed-in welcome state showing name/email/role, refresh restoration through `/api/auth/me`, and logout.
+- Existing health endpoint and the five-table foundation schema.
 
-Authentication, roles, ticket CRUD, assignment, comments, filtering, history tracking, statistics, target resolution handling, duplicate detection, and resolved-ticket suggestions are **planned, not implemented**. Future duplicate detection and suggestions will use category and keyword matching.
+Ticket CRUD, assignment, comments, search/filtering, history recording, dashboard statistics, target resolution handling, duplicate detection, and resolved-ticket suggestions are **not implemented**. Future duplicate detection and suggestions will use category and keyword matching.
 
 ## Folder structure
 
@@ -23,26 +31,40 @@ Authentication, roles, ticket CRUD, assignment, comments, filtering, history tra
 ServiceDesk/
 ├── client/
 │   ├── src/
-│   │   ├── pages/HomePage.jsx
+│   │   ├── components/AuthForm.jsx
+│   │   ├── pages/
+│   │   │   ├── HomePage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   └── RegisterPage.jsx
 │   │   ├── services/api.js
 │   │   ├── styles/index.css
 │   │   ├── App.jsx
 │   │   └── main.jsx
 │   ├── index.html
+│   ├── vite.config.js
 │   ├── package.json
-│   ├── package-lock.json
-│   └── vite.config.js
+│   └── package-lock.json
 ├── server/
 │   ├── src/
-│   │   ├── config/env.js
-│   │   ├── controllers/healthController.js
+│   │   ├── config/
+│   │   │   ├── auth.js
+│   │   │   └── env.js
+│   │   ├── controllers/
+│   │   │   ├── authController.js
+│   │   │   └── healthController.js
 │   │   ├── database/
 │   │   │   ├── pool.js
 │   │   │   └── schema.sql
-│   │   ├── middleware/errorHandler.js
-│   │   ├── routes/healthRoutes.js
+│   │   ├── middleware/
+│   │   │   ├── authenticate.js
+│   │   │   ├── authorizeRoles.js
+│   │   │   └── errorHandler.js
+│   │   ├── routes/
+│   │   │   ├── authRoutes.js
+│   │   │   └── healthRoutes.js
 │   │   ├── app.js
 │   │   └── server.js
+│   ├── test/auth.test.js
 │   ├── .env.example
 │   ├── package.json
 │   └── package-lock.json
@@ -55,14 +77,14 @@ ServiceDesk/
 ### Prerequisites
 
 - Node.js 24 LTS and npm
-- PostgreSQL (including `psql`, or use pgAdmin to run the SQL)
+- PostgreSQL 17 (with `psql`, or pgAdmin)
 - Git
 
-### 1. Clone and install dependencies
+### 1. Install dependencies
+
+After cloning the repository, run from its root:
 
 ```sh
-git clone https://github.com/Kumar-Amrit-Raj/ServiceDesk.git
-cd ServiceDesk
 cd client
 npm ci
 cd ../server
@@ -71,58 +93,48 @@ npm ci
 
 ### 2. Configure the server
 
-Copy `server/.env.example` to `server/.env`. From the `server` directory in PowerShell:
+Keep your existing `server/.env`. For a fresh clone only, copy `server/.env.example` to `server/.env` and configure:
 
-```powershell
-Copy-Item .env.example .env
-```
+- `PORT=5000`
+- `DATABASE_URL`: `postgresql://<username>:<password>@localhost:5432/servicedesk`
+- `JWT_SECRET`: a long, randomly generated private value
 
-On macOS/Linux, use `cp .env.example .env`.
+URL-encode special characters in database credentials. Generate a JWT secret locally, for example with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`, and place it only in your local `.env`. The server refuses to start without a nonblank JWT secret; there is no fallback secret.
 
-Keep `PORT=5000`. Set `DATABASE_URL` to your local PostgreSQL connection string using this format:
+Never commit `.env` or copy real credentials into source code. The existing local database and environment require no migration for Phase 2.
 
-```text
-postgresql://<username>:<password>@localhost:5432/servicedesk
-```
+### 3. Database
 
-Replace the placeholders with local credentials and URL-encode special characters in the username/password. Never commit `.env`. `JWT_SECRET` is reserved for future authentication and can remain blank in Phase 1.
+Start the PostgreSQL service. The existing `servicedesk` database already has `users`, `categories`, `tickets`, `comments`, and `ticket_history`: **do not rerun the schema on that database**.
 
-### 3. Initialize PostgreSQL
-
-Start your local PostgreSQL service. From the repository root, using your PostgreSQL administrator account (replace `postgres` if needed):
+Only for a fresh, empty installation, from the repository root:
 
 ```sh
 psql -U postgres -c "CREATE DATABASE servicedesk;"
 psql -U postgres -d servicedesk -v ON_ERROR_STOP=1 -f server/src/database/schema.sql
 ```
 
-The schema is intended for one-time execution on an empty database. It defines `users`, `categories`, `tickets`, `comments`, and `ticket_history` with keys, timestamps, and constraints. Future authentication must store password hashes; future ticket updates must explicitly update `updated_at`. Role-based assignment and history recording will be handled by future API logic.
+The schema is a one-time initialization file, not a migration script. No tables are recreated by application startup or the tests. Future ticket update logic will explicitly maintain `updated_at`.
 
 ### 4. Run the application
 
-In one terminal:
+In separate terminals, starting from the repository root:
 
 ```sh
 cd server
 npm run dev
 ```
 
-In a second terminal:
-
 ```sh
 cd client
 npm run dev
 ```
 
-Open the frontend URL printed by Vite (normally `http://localhost:5173`). Vite proxies `/api` requests to `http://localhost:5000`. If the server port changes, update the proxy in `client/vite.config.js`. Express CORS permits the default frontend origin.
+Open `http://localhost:5173`. Register an account, log in, refresh to restore the session, and log out.
 
-Check `http://localhost:5000/api/health` for:
+Vite proxies `/api` to `http://localhost:5000`. Express CORS permits `http://localhost:5173`. If port 5000 is occupied, identify the owning process before stopping anything; do not permanently change ports just to work around a stale development server.
 
-```json
-{ "success": true, "message": "ServiceDesk API is running" }
-```
-
-### Build and start commands
+### Build and server start
 
 ```sh
 # From client/
@@ -133,4 +145,35 @@ npm run preview
 npm start
 ```
 
-The frontend build is written to `client/dist`. Preview serves the built frontend locally. Use `npm run dev` for the documented development API proxy. Deployment and production API routing are outside Phase 1.
+The client build is written to `client/dist`. Use `npm run dev` for the documented development API proxy. Production deployment and API routing are not configured yet.
+
+## API endpoints
+
+| Method | Endpoint | Input / access | Response |
+| --- | --- | --- | --- |
+| GET | `/api/health` | Public | `{ success: true, message: "ServiceDesk API is running" }` |
+| POST | `/api/auth/register` | JSON: `name`, `email`, `password` | 201 with `{ user }`; 400 for validation; 409 for duplicate email |
+| POST | `/api/auth/login` | JSON: `email`, `password` | 200 with `{ token, user }`; 401 with `Invalid email or password` for bad credentials |
+| GET | `/api/auth/me` | `Authorization: Bearer <token>` | 200 with `{ user }`; 401 for missing, invalid, expired, or deleted-user sessions |
+
+Every returned user contains only `id`, `name`, `email`, and `role`. Password hashes are never returned. Database queries use parameters. The health endpoint reports API availability, not database connectivity.
+
+For future protected routes, use `authenticate` before `authorizeRoles('support', 'admin')`. Elevated roles must be assigned by a trusted database administrator; there is no public role-management endpoint or UI.
+
+## Session scope
+
+The frontend stores the JWT in localStorage for this phase and attaches it to Axios requests. On refresh, it validates the session with `/api/auth/me`. Invalid sessions return to login; connection failures offer a retry.
+
+Logout removes the browser's token. Tokens are not revoked server-side and remain valid until expiry if copied elsewhere. There are no refresh tokens, password reset, email verification, or login rate limits yet. This is a local portfolio foundation, not a production-hardened authentication service.
+
+## Verification
+
+From `server/`, with the local PostgreSQL service running and `.env` configured:
+
+```sh
+npm test
+```
+
+The Node.js built-in test runner exercises registration, validation, stored password hashing, duplicate emails, login failures, JWT expiry/signature validation, safe profile responses, current database roles, authorization middleware, deleted-user sessions, and the health endpoint. It creates a uniquely named test user, changes only that user's role, and deletes that user afterward. It does not drop or recreate tables. Interrupted runs may leave an `auth-test-...@example.com` user behind.
+
+From `client/`, run `npm run build` to verify the production bundle.
