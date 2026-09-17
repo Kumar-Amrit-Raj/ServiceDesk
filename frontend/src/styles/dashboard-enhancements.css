@@ -70,6 +70,42 @@
   color: #c84b12;
 }
 
+/* Use the same product header language before sign-in as after sign-in. */
+.auth-topbar {
+  position: relative;
+  min-height: 72px;
+  gap: 18px;
+  border-bottom: 1px solid #cdcec7;
+  background: linear-gradient(90deg, #ffffff 0%, #ffffff 72%, #fff7f2 100%);
+  box-shadow: 0 7px 20px rgba(23, 24, 20, 0.06);
+}
+
+.auth-topbar::after {
+  content: '';
+  position: absolute;
+  left: clamp(36px, 5vw, 78px);
+  bottom: -1px;
+  width: 150px;
+  height: 3px;
+  background: #ff651f;
+}
+
+.auth-topbar strong {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px 0 12px;
+  border-left: 4px solid #ff651f;
+  background: #171814;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.auth-topbar span {
+  color: #676962;
+  font-weight: 700;
+}
+
 /* Status cards stay light, but each state gets its own visual identity. */
 .desk-stats {
   gap: 12px;
@@ -150,6 +186,11 @@
     width: 110px;
   }
 
+  .auth-topbar::after {
+    left: 42px;
+    width: 110px;
+  }
+
   .desk-stats article,
   .desk-stats article:nth-child(2),
   .desk-stats article:nth-child(-n+2) {
@@ -163,17 +204,24 @@
     border-left-width: 5px;
   }
 
-  .desk-header {
+  .desk-header,
+  .auth-topbar {
     min-height: 64px;
   }
 
-  .desk-brand strong {
+  .desk-brand strong,
+  .auth-topbar strong {
     min-height: 34px;
     padding-inline: 10px 12px;
   }
 
   .desk-header::after {
     left: 18px;
+    width: 84px;
+  }
+
+  .auth-topbar::after {
+    left: 24px;
     width: 84px;
   }
 
