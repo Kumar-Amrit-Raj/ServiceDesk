@@ -42,13 +42,13 @@ button {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 32px;
+  padding: 20px;
 }
 
 .auth-shell {
   position: relative;
   width: min(1440px, 100%);
-  min-height: 820px;
+  min-height: min(760px, calc(100vh - 40px));
   overflow: hidden;
   background: var(--surface);
   border: 1px solid #d2d2ce;
@@ -63,7 +63,7 @@ button {
 }
 
 .auth-topbar {
-  min-height: 72px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   gap: 38px;
@@ -96,8 +96,8 @@ button {
 .auth-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(56px, 7vw, 120px);
-  padding: 72px 80px 80px;
+  gap: clamp(48px, 6vw, 100px);
+  padding: 48px 80px 52px;
 }
 
 .auth-entry {
@@ -107,7 +107,7 @@ button {
 
 .auth-eyebrow,
 .workflow-eyebrow {
-  margin: 0 0 26px;
+  margin: 0 0 20px;
   color: var(--accent);
   font-size: 0.68rem;
   font-weight: 700;
@@ -118,25 +118,25 @@ button {
   max-width: 500px;
   margin: 0;
   color: var(--text);
-  font-size: clamp(2.8rem, 4.3vw, 4.4rem);
+  font-size: clamp(2.6rem, 4vw, 4rem);
   line-height: 1.03;
   letter-spacing: -0.035em;
 }
 
 .auth-subtitle {
   max-width: 470px;
-  margin: 22px 0 0;
+  margin: 18px 0 0;
   color: var(--muted-strong);
-  font-size: 1rem;
-  line-height: 1.55;
+  font-size: 0.96rem;
+  line-height: 1.5;
 }
 
 .auth-notice {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 .auth-form {
-  margin-top: 54px;
+  margin-top: 40px;
 }
 
 .auth-form fieldset {
@@ -148,7 +148,7 @@ button {
 
 .auth-form label {
   display: block;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
   color: #a4a59d;
   font-size: 0.67rem;
   font-weight: 700;
@@ -159,8 +159,8 @@ button {
 .auth-form input {
   display: block;
   width: 100%;
-  height: 56px;
-  margin-top: 10px;
+  height: 50px;
+  margin-top: 8px;
   padding: 0 16px;
   border: 1px solid var(--border-strong);
   border-radius: 0;
@@ -179,11 +179,22 @@ button {
   box-shadow: 0 0 0 1px var(--accent);
 }
 
+.auth-form input:-webkit-autofill,
+.auth-form input:-webkit-autofill:hover,
+.auth-form input:-webkit-autofill:focus,
+.auth-form input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px #1d1e1a inset;
+  box-shadow: 0 0 0 1000px #1d1e1a inset;
+  caret-color: var(--accent);
+  transition: background-color 9999s ease-out 0s;
+}
+
 .auth-submit,
 .system-state-card > button,
 .signed-in-card > button,
 .signed-in-card button {
-  min-height: 54px;
+  min-height: 50px;
   border: 1px solid transparent;
   border-radius: 0;
   padding: 0 18px;
@@ -197,7 +208,7 @@ button {
 
 .auth-submit {
   width: 100%;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
 .auth-submit:hover,
@@ -218,7 +229,7 @@ input:focus-visible {
 }
 
 .auth-switch {
-  margin: 24px 0 0;
+  margin: 20px 0 0;
   color: #9a9b93;
   font-size: 0.86rem;
 }
@@ -238,7 +249,7 @@ input:focus-visible {
 }
 
 .password-help {
-  margin: -8px 0 22px;
+  margin: -6px 0 18px;
   color: #85877f;
   font-size: 0.78rem;
 }
@@ -247,7 +258,7 @@ input:focus-visible {
   width: min(100%, 560px);
   align-self: center;
   justify-self: end;
-  padding: 38px;
+  padding: 30px;
   border: 1px solid #30312c;
   background: #181916;
 }
@@ -256,37 +267,37 @@ input:focus-visible {
   max-width: 485px;
   margin: 0;
   color: var(--text);
-  font-size: clamp(1.65rem, 2.2vw, 2.25rem);
-  line-height: 1.25;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  line-height: 1.22;
   letter-spacing: -0.02em;
 }
 
 .workflow-intro {
   max-width: 470px;
-  margin: 18px 0 0;
-  color: #90928a;
-  font-size: 0.92rem;
-  line-height: 1.55;
+  margin: 14px 0 0;
+  color: #9a9c94;
+  font-size: 0.88rem;
+  line-height: 1.48;
 }
 
 .workflow-divider {
   height: 1px;
-  margin: 28px 0 22px;
+  margin: 20px 0 16px;
   background: #30312c;
 }
 
 .workflow-steps {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .workflow-step {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 14px;
   align-items: start;
-  min-height: 82px;
-  padding: 18px 18px 17px;
+  min-height: 68px;
+  padding: 14px 16px;
   border: 1px solid #35362f;
   border-left: 2px solid #5b3322;
   background: var(--surface-soft);
@@ -300,17 +311,17 @@ input:focus-visible {
 
 .workflow-step strong {
   display: block;
-  margin-bottom: 5px;
-  color: #d7d5ce;
+  margin-bottom: 3px;
+  color: #e1dfd8;
   font-size: 0.7rem;
   letter-spacing: 0.05em;
 }
 
 .workflow-step p {
   margin: 0;
-  color: #9d9f97;
-  font-size: 0.86rem;
-  line-height: 1.45;
+  color: #a7a9a1;
+  font-size: 0.83rem;
+  line-height: 1.38;
 }
 
 .status,
@@ -427,8 +438,8 @@ input:focus-visible {
   .auth-shell { min-height: 100vh; border: 0; }
   .auth-body {
     grid-template-columns: 1fr;
-    gap: 56px;
-    padding: 56px 42px 64px;
+    gap: 48px;
+    padding: 48px 42px 56px;
   }
   .auth-entry,
   .workflow-panel {
@@ -440,13 +451,13 @@ input:focus-visible {
 
 @media (max-width: 560px) {
   .auth-topbar {
-    min-height: 66px;
+    min-height: 62px;
     gap: 18px;
     padding: 0 24px;
   }
   .auth-topbar span { display: none; }
-  .auth-body { padding: 44px 26px 52px; }
-  .auth-title { font-size: 2.55rem; }
-  .workflow-panel { padding: 26px; }
-  .workflow-step { grid-template-columns: 34px minmax(0, 1fr); gap: 12px; }
+  .auth-body { padding: 40px 26px 48px; }
+  .auth-title { font-size: 2.45rem; }
+  .workflow-panel { padding: 24px; }
+  .workflow-step { grid-template-columns: 32px minmax(0, 1fr); gap: 11px; }
 }
