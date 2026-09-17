@@ -15,6 +15,11 @@ export async function checkDuplicateTickets(payload) {
   return data.matches;
 }
 
+export async function fetchSolutionSuggestions(payload) {
+  const { data } = await api.post('/tickets/solution-suggestions', payload);
+  return data.suggestions;
+}
+
 export async function createTicket(payload) {
   const { data } = await api.post('/tickets', payload);
   return data.ticket;
