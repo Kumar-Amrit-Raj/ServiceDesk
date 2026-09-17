@@ -61,7 +61,9 @@ function canAccessTicket(user, ticket) {
 }
 
 export async function listCategories(req, res) {
-  const { rows } = await pool.query('SELECT id, name FROM categories ORDER BY name ASC');
+  const { rows } = await pool.query(
+    'SELECT id, name FROM categories WHERE is_active = TRUE ORDER BY name ASC',
+  );
   res.json({ categories: rows });
 }
 
@@ -84,7 +86,10 @@ export async function createTicket(req, res) {
     return res.status(400).json({ message: 'Priority must be low, medium, or high.' });
   }
 
-  const category = await pool.query('SELECT id FROM categories WHERE id = $1', [categoryId]);
+  const category = await pool.query(
+    'SELECT id FROM categories WHERE id = $1 AND is_active = TRUE',
+    [categoryId],
+  );
   if (!category.rows[0]) {
     return res.status(400).json({ message: 'Please choose a valid category.' });
   }
