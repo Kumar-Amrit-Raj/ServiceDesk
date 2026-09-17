@@ -1,7 +1,7 @@
 :root {
   font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
   color: #f0eee7;
-  background: #ececea;
+  background: #151613;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   line-height: 1.5;
@@ -21,12 +21,19 @@
 
 * { box-sizing: border-box; }
 
-html, body, #root { min-height: 100%; }
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+}
 
 body {
   margin: 0;
   min-width: 320px;
-  background: #ececea;
+  overflow: hidden;
+  background: var(--surface);
 }
 
 button,
@@ -34,40 +41,43 @@ input {
   font: inherit;
 }
 
-button {
-  cursor: pointer;
-}
+button { cursor: pointer; }
 
+/* Full-bleed authentication workspace. Figma is used only as visual inspiration;
+   the browser layout is intentionally fluid and viewport-driven. */
 .auth-page {
+  width: 100%;
+  height: 100dvh;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 20px;
+  background: var(--surface);
 }
 
 .auth-shell {
   position: relative;
-  width: min(1440px, 100%);
-  min-height: min(760px, calc(100vh - 40px));
+  display: grid;
+  grid-template-rows: 64px minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   background: var(--surface);
-  border: 1px solid #d2d2ce;
 }
 
 .auth-shell::before {
   content: "";
   position: absolute;
+  z-index: 2;
   inset: 0 auto 0 0;
-  width: 7px;
+  width: 6px;
   background: var(--accent);
 }
 
 .auth-topbar {
-  min-height: 64px;
   display: flex;
   align-items: center;
-  gap: 38px;
-  padding: 0 48px;
+  gap: 34px;
+  min-width: 0;
+  padding: 0 clamp(36px, 5vw, 78px);
   border-bottom: 1px solid #2e2f2a;
 }
 
@@ -94,22 +104,26 @@ button {
 }
 
 .auth-body {
+  min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(48px, 6vw, 100px);
-  padding: 48px 80px 52px;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(430px, 1.1fr);
+  align-items: center;
+  gap: clamp(48px, 7vw, 132px);
+  padding: clamp(28px, 4vh, 42px) clamp(48px, 7vw, 112px);
+  overflow: hidden;
 }
 
 .auth-entry {
   width: min(100%, 500px);
-  align-self: start;
+  min-width: 0;
+  justify-self: start;
 }
 
 .auth-eyebrow,
 .workflow-eyebrow {
-  margin: 0 0 20px;
+  margin: 0 0 18px;
   color: var(--accent);
-  font-size: 0.68rem;
+  font-size: 0.67rem;
   font-weight: 700;
   letter-spacing: 0.05em;
 }
@@ -118,25 +132,25 @@ button {
   max-width: 500px;
   margin: 0;
   color: var(--text);
-  font-size: clamp(2.6rem, 4vw, 4rem);
-  line-height: 1.03;
+  font-size: clamp(2.65rem, 4.2vw, 4.15rem);
+  line-height: 1.02;
   letter-spacing: -0.035em;
 }
 
 .auth-subtitle {
   max-width: 470px;
-  margin: 18px 0 0;
+  margin: 16px 0 0;
   color: var(--muted-strong);
-  font-size: 0.96rem;
-  line-height: 1.5;
+  font-size: 0.95rem;
+  line-height: 1.45;
 }
 
 .auth-notice {
-  margin-top: 20px;
+  margin: 16px 0 0;
 }
 
 .auth-form {
-  margin-top: 40px;
+  margin-top: 28px;
 }
 
 .auth-form fieldset {
@@ -148,9 +162,9 @@ button {
 
 .auth-form label {
   display: block;
-  margin-bottom: 18px;
+  margin-bottom: 15px;
   color: #a4a59d;
-  font-size: 0.67rem;
+  font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -159,9 +173,9 @@ button {
 .auth-form input {
   display: block;
   width: 100%;
-  height: 50px;
-  margin-top: 8px;
-  padding: 0 16px;
+  height: 48px;
+  margin-top: 7px;
+  padding: 0 15px;
   border: 1px solid var(--border-strong);
   border-radius: 0;
   outline: none;
@@ -170,9 +184,7 @@ button {
   caret-color: var(--accent);
 }
 
-.auth-form input::placeholder {
-  color: #6f7169;
-}
+.auth-form input::placeholder { color: #6f7169; }
 
 .auth-form input:focus {
   border-color: var(--accent);
@@ -194,7 +206,7 @@ button {
 .system-state-card > button,
 .signed-in-card > button,
 .signed-in-card button {
-  min-height: 50px;
+  min-height: 48px;
   border: 1px solid transparent;
   border-radius: 0;
   padding: 0 18px;
@@ -208,7 +220,7 @@ button {
 
 .auth-submit {
   width: 100%;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .auth-submit:hover,
@@ -229,9 +241,9 @@ input:focus-visible {
 }
 
 .auth-switch {
-  margin: 20px 0 0;
+  margin: 17px 0 0;
   color: #9a9b93;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
 }
 
 .link {
@@ -244,60 +256,58 @@ input:focus-visible {
   text-underline-offset: 3px;
 }
 
-.link:hover {
-  color: var(--accent);
-}
+.link:hover { color: var(--accent); }
 
 .password-help {
-  margin: -6px 0 18px;
+  margin: -4px 0 14px;
   color: #85877f;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
 }
 
 .workflow-panel {
-  width: min(100%, 560px);
-  align-self: center;
+  width: min(100%, 600px);
+  min-width: 0;
   justify-self: end;
-  padding: 30px;
+  padding: clamp(24px, 2.4vw, 34px);
   border: 1px solid #30312c;
   background: #181916;
 }
 
 .workflow-panel h2 {
-  max-width: 485px;
+  max-width: 500px;
   margin: 0;
   color: var(--text);
-  font-size: clamp(1.5rem, 2vw, 2rem);
-  line-height: 1.22;
+  font-size: clamp(1.45rem, 2vw, 2rem);
+  line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
 .workflow-intro {
-  max-width: 470px;
-  margin: 14px 0 0;
+  max-width: 500px;
+  margin: 12px 0 0;
   color: #9a9c94;
-  font-size: 0.88rem;
-  line-height: 1.48;
+  font-size: 0.85rem;
+  line-height: 1.42;
 }
 
 .workflow-divider {
   height: 1px;
-  margin: 20px 0 16px;
+  margin: 17px 0 14px;
   background: #30312c;
 }
 
 .workflow-steps {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .workflow-step {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
   align-items: start;
-  min-height: 68px;
-  padding: 14px 16px;
+  min-height: 60px;
+  padding: 12px 14px;
   border: 1px solid #35362f;
   border-left: 2px solid #5b3322;
   background: var(--surface-soft);
@@ -305,30 +315,30 @@ input:focus-visible {
 
 .workflow-index {
   color: var(--accent);
-  font-size: 0.73rem;
+  font-size: 0.71rem;
   font-weight: 800;
 }
 
 .workflow-step strong {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   color: #e1dfd8;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   letter-spacing: 0.05em;
 }
 
 .workflow-step p {
   margin: 0;
   color: #a7a9a1;
-  font-size: 0.83rem;
-  line-height: 1.38;
+  font-size: 0.81rem;
+  line-height: 1.34;
 }
 
 .status,
 .error {
-  padding: 13px 15px;
+  padding: 11px 14px;
   border-radius: 0;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
 }
 
 .status {
@@ -343,27 +353,33 @@ input:focus-visible {
   color: #ff9b8f;
 }
 
+/* Signed-in placeholder is also full-bleed so there is no temporary card-in-a-page look. */
 .system-state-page,
 .signed-in-page {
+  width: 100%;
+  height: 100dvh;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 32px;
-  background: #ececea;
+  padding: 0;
+  background: var(--surface);
 }
 
 .system-state-card,
 .signed-in-card {
-  width: min(620px, 100%);
-  padding: 42px;
-  border: 1px solid #35362f;
+  width: 100%;
+  min-height: 100%;
+  padding: clamp(38px, 5vw, 76px);
+  border: 0;
   background: var(--surface);
   color: var(--text);
 }
 
-.system-state-card p:first-child {
-  margin-top: 0;
+.system-state-card {
+  display: grid;
+  align-content: center;
+  justify-items: start;
 }
+
+.system-state-card p:first-child { margin-top: 0; }
 
 .system-state-mark {
   display: inline-block;
@@ -386,8 +402,8 @@ input:focus-visible {
 }
 
 .signed-in-brand {
-  margin-bottom: 30px;
-  padding-bottom: 18px;
+  margin-bottom: 34px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #34352f;
   font-family: "IBM Plex Mono", Consolas, monospace;
   font-weight: 800;
@@ -400,14 +416,16 @@ input:focus-visible {
   letter-spacing: 0.05em;
 }
 
-.signed-in-card h2 {
-  margin: 0 0 8px;
-  font-size: 1.8rem;
+.signed-in-card > :not(.signed-in-brand) {
+  max-width: 720px;
 }
 
-.signed-in-card p {
-  color: var(--muted-strong);
+.signed-in-card h2 {
+  margin: 0 0 8px;
+  font-size: 1.9rem;
 }
+
+.signed-in-card p { color: var(--muted-strong); }
 
 .profile {
   margin: 24px 0;
@@ -429,35 +447,70 @@ input:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.profile dd:last-child {
-  margin-bottom: 0;
+.profile dd:last-child { margin-bottom: 0; }
+
+@media (max-width: 1100px) and (min-width: 981px) {
+  .auth-body {
+    grid-template-columns: minmax(330px, 0.9fr) minmax(390px, 1.1fr);
+    gap: 42px;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+
+  .auth-title { font-size: clamp(2.45rem, 4vw, 3.45rem); }
+  .workflow-panel { padding: 24px; }
 }
 
 @media (max-width: 980px) {
-  .auth-page { padding: 0; }
-  .auth-shell { min-height: 100vh; border: 0; }
+  body { overflow: auto; }
+
+  .auth-page {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .auth-shell {
+    display: block;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .auth-topbar { min-height: 64px; }
+
   .auth-body {
     grid-template-columns: 1fr;
-    gap: 48px;
-    padding: 48px 42px 56px;
+    gap: 44px;
+    overflow: visible;
+    padding: 46px 42px 56px;
   }
+
   .auth-entry,
   .workflow-panel {
     width: 100%;
-    max-width: 620px;
+    max-width: 640px;
     justify-self: center;
+    margin-inline: auto;
+  }
+
+  .system-state-page,
+  .signed-in-page {
+    height: auto;
+    min-height: 100dvh;
   }
 }
 
 @media (max-width: 560px) {
   .auth-topbar {
-    min-height: 62px;
     gap: 18px;
     padding: 0 24px;
   }
+
   .auth-topbar span { display: none; }
-  .auth-body { padding: 40px 26px 48px; }
-  .auth-title { font-size: 2.45rem; }
-  .workflow-panel { padding: 24px; }
-  .workflow-step { grid-template-columns: 32px minmax(0, 1fr); gap: 11px; }
+  .auth-body { padding: 38px 24px 46px; }
+  .auth-title { font-size: 2.4rem; }
+  .workflow-panel { padding: 22px; }
+  .workflow-step { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; }
+  .signed-in-card,
+  .system-state-card { padding: 32px 24px; }
 }
