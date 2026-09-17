@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getApiError } from '../services/api.js';
 import { createTicket, fetchCategories, fetchTickets } from '../services/tickets.js';
+import '../styles/dashboard.css';
 
 const EMPTY_FORM = {
   title: '',
