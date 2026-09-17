@@ -78,15 +78,17 @@
   color: #3f7553;
 }
 
-/* Make the ticket table header clearly distinct from the page background. */
+/* Warm branded ticket-table header instead of a neutral grey strip. */
 .ticket-table thead tr,
 .ticket-table th {
-  background: #e7e4dc;
+  background: linear-gradient(90deg, #fff0e6 0%, #fff7f2 55%, #fffaf7 100%);
 }
 
 .ticket-table th {
-  color: #4e5049;
-  border-bottom: 1px solid #c8cac3;
+  color: #6f3f29;
+  border-top: 2px solid #ff651f;
+  border-bottom: 1px solid #efc4ad;
+  font-weight: 800;
 }
 
 @media (max-width: 1100px) {
