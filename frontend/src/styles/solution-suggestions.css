@@ -1,9 +1,9 @@
 .solution-suggestions {
   margin-top: 18px;
   padding: 24px 26px;
-  border: 1px solid #c9d9cf;
-  border-left: 4px solid #4e855f;
-  background: linear-gradient(90deg, #f4fbf6 0%, #ffffff 52%);
+  border: 1px solid #c8d8e8;
+  border-left: 4px solid #3f79ad;
+  background: linear-gradient(90deg, #f4f8fc 0%, #ffffff 52%);
 }
 
 .solution-suggestions-heading,
@@ -21,7 +21,7 @@
 
 .solution-suggestions-heading span,
 .solution-note > span {
-  color: #3f7553;
+  color: #386b9b;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -34,15 +34,15 @@
 
 .solution-suggestions-heading > strong {
   padding: 8px 10px;
-  border: 1px solid #b9d2c0;
+  border: 1px solid #c8d8e8;
   background: #ffffff;
-  color: #315e41;
+  color: #386b9b;
   font-size: 13px;
 }
 
 .solution-suggestions-copy {
   margin: 16px 0 18px;
-  color: #5b625d;
+  color: #62645e;
   line-height: 1.6;
 }
 
@@ -57,7 +57,7 @@
   justify-content: space-between;
   gap: 18px;
   padding: 18px;
-  border: 1px solid #d8e3db;
+  border: 1px solid #d9dee8;
   background: #ffffff;
 }
 
@@ -68,7 +68,7 @@
 }
 
 .solution-suggestion-main > span {
-  color: #3f7553;
+  color: #386b9b;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -79,20 +79,20 @@
 }
 
 .solution-suggestion-main > small {
-  color: #66706a;
+  color: #687184;
   line-height: 1.45;
 }
 
 .solution-note {
   margin: 6px 0 2px;
   padding: 12px 14px;
-  border-left: 3px solid #4e855f;
-  background: #f5f8f5;
+  border-left: 3px solid #3f79ad;
+  background: #f5f6f8;
 }
 
 .solution-note p {
   margin: 6px 0 0;
-  color: #2d332f;
+  color: #252b36;
   line-height: 1.55;
 }
 
@@ -101,9 +101,9 @@
   flex: 0 0 auto;
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid #9eb9a7;
+  border: 1px solid #b8cbe0;
   background: #ffffff;
-  color: #294f37;
+  color: #315f8a;
   font: inherit;
   font-size: 12px;
   font-weight: 800;
@@ -114,13 +114,13 @@
 .solution-suggestions-actions {
   margin-top: 18px;
   padding-top: 16px;
-  border-top: 1px solid #d8e3db;
-  color: #56615a;
+  border-top: 1px solid #d9dee8;
+  color: #62645e;
 }
 
 .solution-suggestions-actions button {
-  border-color: #4e855f;
-  background: #4e855f;
+  border-color: #3f79ad;
+  background: #3f79ad;
   color: #ffffff;
 }
 
