@@ -7,7 +7,11 @@ export async function fetchCategories() {
 
 export async function fetchTickets(params = {}) {
   const { data } = await api.get('/tickets', { params });
-  return data.tickets;
+  return {
+    tickets: data.tickets,
+    pagination: data.pagination,
+    summary: data.summary,
+  };
 }
 
 export async function checkDuplicateTickets(payload) {
