@@ -258,6 +258,35 @@
 .ticket-table tbody tr:hover { background: #fafaf8; }
 .ticket-table tbody tr:last-child td { border-bottom: 0; }
 .ticket-table td > strong { display: block; color: #20211d; font-weight: 650; }
+
+.ticket-pagination {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 10px 18px;
+  border-top: 1px solid #d9dad4;
+  background: #fafaf8;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+}
+.ticket-pagination > span { color: #777972; font-size: 0.65rem; }
+.ticket-pagination > div { display: flex; align-items: center; gap: 10px; }
+.ticket-pagination strong { color: #555750; font-size: 0.62rem; letter-spacing: 0.04em; }
+.ticket-pagination button {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid #c7c8c2;
+  border-radius: 0;
+  background: #ffffff;
+  color: #343631;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.ticket-pagination button:hover:not(:disabled) { border-color: #ff651f; color: #c84b12; background: #fff8f4; }
+.ticket-pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 .ticket-requester { display: block; margin-top: 4px; color: #85877f; font-size: 0.75rem; }
 .ticket-id { color: #d84f12 !important; font-family: "IBM Plex Mono", Consolas, monospace; font-size: 0.75rem !important; }
 
@@ -494,6 +523,8 @@
   .ticket-filters { display: grid; grid-template-columns: 1fr 1fr; }
   .ticket-filters input { width: 100%; grid-column: 1 / -1; }
   .ticket-filters select { width: 100%; }
+  .ticket-pagination { align-items: flex-start; flex-direction: column; }
+  .ticket-pagination > div { width: 100%; justify-content: space-between; }
   .ticket-detail-header { align-items: flex-start; flex-direction: column; padding: 20px; }
   .ticket-meta-grid { grid-template-columns: 1fr 1fr; }
   .ticket-meta-grid article { border-right: 1px solid #e1e2dc; border-bottom: 1px solid #e1e2dc; }
