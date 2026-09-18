@@ -139,17 +139,34 @@
 }
 
 .desk-stats article {
-  min-height: 98px;
+  min-height: 122px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 18px 20px;
+  padding: 20px 22px;
   border-right: 1px solid #d9dad4;
 }
 
 .desk-stats article:last-child { border-right: 0; }
-.desk-stats span { color: #777972; font-family: "IBM Plex Mono", Consolas, monospace; font-size: 0.61rem; letter-spacing: 0.05em; }
-.desk-stats strong { color: #171814; font-size: 1.9rem; line-height: 1; }
+.desk-stats span {
+  color: #777972;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.desk-stats strong {
+  margin: 6px 0;
+  color: #171814;
+  font-size: clamp(2.25rem, 3vw, 3rem);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+.desk-stats small {
+  color: #777972;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
 
 .desk-error {
   margin: 20px 0 0;
@@ -242,9 +259,35 @@
 .ticket-panel-top { padding: 22px 24px; border-bottom: 1px solid #d9dad4; }
 .ticket-panel-top > div { min-width: 160px; }
 
-.ticket-filters { justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
-.ticket-filters input { width: 190px; height: 38px; padding: 0 11px; }
-.ticket-filters select { width: 140px; height: 38px; padding: 0 9px; }
+.ticket-filters {
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ticket-filter-field {
+  width: 142px;
+  display: grid;
+  gap: 6px;
+  color: #666861;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.ticket-filter-search { width: 196px; }
+.ticket-filter-field input,
+.ticket-filter-field select {
+  width: 100%;
+  height: 38px;
+}
+.ticket-filter-field input { padding: 0 11px; }
+.ticket-filter-field select { padding: 0 9px; }
+.ticket-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .ticket-filters button { min-height: 38px; padding: 0 12px; background: #ff651f; color: #171713; }
 .ticket-filters .filter-clear { border-color: #c7c8c2; background: #ffffff; color: #343631; }
 .ticket-filters .filter-clear:hover { background: #f7f7f4; }
@@ -287,7 +330,16 @@
 }
 .ticket-pagination button:hover:not(:disabled) { border-color: #ff651f; color: #c84b12; background: #fff8f4; }
 .ticket-pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
-.ticket-requester { display: block; margin-top: 4px; color: #85877f; font-size: 0.75rem; }
+.ticket-requester { display: block; margin-top: 4px; color: #666861; font-size: 0.74rem; }
+.ticket-created {
+  display: block;
+  margin-top: 5px;
+  color: #85877f;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+}
 .ticket-id { color: #d84f12 !important; font-family: "IBM Plex Mono", Consolas, monospace; font-size: 0.75rem !important; }
 
 .ticket-view,
@@ -311,12 +363,12 @@
   text-transform: uppercase;
 }
 
-.priority-high { color: #c33f36; }
-.priority-medium { color: #9f6900; }
-.priority-low { color: #3f7553; }
-.status-open { color: #9a6500; }
+.priority-high { color: #d84f12; }
+.priority-medium { color: #386b9b; }
+.priority-low { color: #70726c; }
+.status-open { color: #d84f12; }
 .status-in_progress { color: #386b9b; }
-.status-resolved { color: #3f7553; }
+.status-resolved { color: #242620; }
 .status-closed { color: #70726c; }
 
 .empty-tickets { padding: 34px !important; text-align: center !important; color: #85877f !important; }
@@ -520,9 +572,13 @@
   .ticket-create-panel { padding: 20px; }
   .panel-heading { align-items: flex-start; flex-direction: column; }
   .ticket-form-row { align-items: stretch; flex-direction: column; }
-  .ticket-filters { display: grid; grid-template-columns: 1fr 1fr; }
-  .ticket-filters input { width: 100%; grid-column: 1 / -1; }
-  .ticket-filters select { width: 100%; }
+  .ticket-filters { display: grid; grid-template-columns: 1fr 1fr; align-items: end; }
+  .ticket-filter-field { width: 100%; }
+  .ticket-filter-search { grid-column: 1 / -1; width: 100%; }
+  .ticket-filter-field input,
+  .ticket-filter-field select { width: 100%; }
+  .ticket-filter-actions { grid-column: 1 / -1; }
+  .ticket-filter-actions button { flex: 1; }
   .ticket-pagination { align-items: flex-start; flex-direction: column; }
   .ticket-pagination > div { width: 100%; justify-content: space-between; }
   .ticket-detail-header { align-items: flex-start; flex-direction: column; padding: 20px; }
