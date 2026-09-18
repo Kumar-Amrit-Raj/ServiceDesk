@@ -137,6 +137,14 @@
   .ticket-filters select[aria-label='Filter by SLA state'] {
     min-width: 142px;
   }
+
+  .sla-target-cell {
+    min-width: 125px;
+  }
+
+  .sla-target-cell small {
+    font-size: 0.64rem;
+  }
 }
 
 @media (max-width: 700px) {
