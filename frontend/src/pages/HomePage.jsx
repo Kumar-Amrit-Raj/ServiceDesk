@@ -342,10 +342,10 @@ export default function HomePage({ user, onLogout }) {
       });
       const [ticketHistory, refreshedTickets] = await Promise.all([
         fetchTicketHistory(ticket.id),
-        loadTickets(filters),
+        loadTickets(appliedFilters, pagination.page),
       ]);
       setHistory(ticketHistory);
-      setTickets(refreshedTickets);
+      applyTicketResult(refreshedTickets);
     } catch (requestError) {
       setError(getApiError(requestError));
     } finally {
@@ -391,7 +391,7 @@ export default function HomePage({ user, onLogout }) {
           <article><span>OPEN</span><strong>{stats.open}</strong></article>
           <article><span>IN PROGRESS</span><strong>{stats.inProgress}</strong></article>
           <article><span>RESOLVED / CLOSED</span><strong>{stats.resolved}</strong></article>
-          <article><span>TOTAL</span><strong>{tickets.length}</strong></article>
+          <article><span>TOTAL</span><strong>{pagination.total}</strong></article>
         </section>
 
         {isStaff && <SupportAnalytics refreshKey={tickets.map((ticket) => `${ticket.id}:${ticket.status}:${ticket.assigned_to ?? ''}`).join('|')} />}
