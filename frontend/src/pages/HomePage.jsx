@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getApiError } from '../services/api.js';
 import AdminUserManagement from '../components/AdminUserManagement.jsx';
 import AdminCategoryManagement from '../components/AdminCategoryManagement.jsx';
@@ -29,6 +29,8 @@ const EMPTY_FORM = {
 };
 
 const EMPTY_FILTERS = { status: '', priority: '', categoryId: '', assigneeId: '', sla: '', search: '', sort: 'newest' };
+const DEFAULT_PAGINATION = { page: 1, pageSize: 10, total: 0, totalPages: 1 };
+const EMPTY_SUMMARY = { open: 0, inProgress: 0, resolved: 0, overdue: 0, dueSoon: 0 };
 
 function formatStatus(status) {
   return String(status ?? '').replace('_', ' ');
@@ -92,6 +94,9 @@ export default function HomePage({ user, onLogout }) {
   const [duplicateMatches, setDuplicateMatches] = useState([]);
   const [solutionSuggestions, setSolutionSuggestions] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS);
+  const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
+  const [ticketSummary, setTicketSummary] = useState(EMPTY_SUMMARY);
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [comments, setComments] = useState([]);
@@ -103,8 +108,14 @@ export default function HomePage({ user, onLogout }) {
   const [workflowBusy, setWorkflowBusy] = useState(false);
   const [workflowForm, setWorkflowForm] = useState({ status: 'open', assignedTo: '' });
 
-  async function loadTickets(nextFilters = filters) {
-    const params = {};
+  function applyTicketResult(result) {
+    setTickets(result.tickets);
+    setPagination(result.pagination ?? DEFAULT_PAGINATION);
+    setTicketSummary(result.summary ?? EMPTY_SUMMARY);
+  }
+
+  async function loadTickets(nextFilters = appliedFilters, page = 1) {
+    const params = { page, pageSize: pagination.pageSize };
     if (nextFilters.status) params.status = nextFilters.status;
     if (nextFilters.priority) params.priority = nextFilters.priority;
     if (nextFilters.categoryId) params.categoryId = nextFilters.categoryId;
@@ -120,14 +131,14 @@ export default function HomePage({ user, onLogout }) {
     setLoading(true);
     setError('');
 
-    const requests = [fetchCategories(), fetchTickets()];
+    const requests = [fetchCategories(), fetchTickets({ page: 1, pageSize: DEFAULT_PAGINATION.pageSize })];
     if (isStaff) requests.push(fetchSupportAgents());
 
     Promise.all(requests)
       .then(([categoryData, ticketData, supportAgents = []]) => {
         if (!active) return;
         setCategories(categoryData);
-        setTickets(ticketData);
+        applyTicketResult(ticketData);
         if (isStaff) setAgents(supportAgents);
       })
       .catch((requestError) => {
@@ -150,16 +161,16 @@ export default function HomePage({ user, onLogout }) {
     return () => cancelAnimationFrame(frame);
   }, [detailLoading, selectedTicket?.id]);
 
-  const stats = useMemo(() => ({
-    open: tickets.filter((ticket) => ticket.status === 'open').length,
-    inProgress: tickets.filter((ticket) => ticket.status === 'in_progress').length,
-    resolved: tickets.filter((ticket) => ['resolved', 'closed'].includes(ticket.status)).length,
-  }), [tickets]);
+  const stats = {
+    open: ticketSummary.open,
+    inProgress: ticketSummary.inProgress,
+    resolved: ticketSummary.resolved,
+  };
 
-  const slaStats = useMemo(() => ({
-    overdue: tickets.filter((ticket) => ticket.sla_state === 'overdue').length,
-    dueSoon: tickets.filter((ticket) => ticket.sla_state === 'due_soon').length,
-  }), [tickets]);
+  const slaStats = {
+    overdue: ticketSummary.overdue,
+    dueSoon: ticketSummary.dueSoon,
+  };
 
   function clearCreateSuggestions() {
     setDuplicateMatches([]);
@@ -181,8 +192,9 @@ export default function HomePage({ user, onLogout }) {
   }
 
   async function createCurrentTicket() {
-    const ticket = await createTicket(currentTicketPayload());
-    setTickets((current) => [ticket, ...current]);
+    await createTicket(currentTicketPayload());
+    const refreshed = await loadTickets(appliedFilters, 1);
+    applyTicketResult(refreshed);
     setForm(EMPTY_FORM);
     clearCreateSuggestions();
     setShowCreate(false);
@@ -226,7 +238,8 @@ export default function HomePage({ user, onLogout }) {
     setLoading(true);
     setError('');
     try {
-      setTickets(await loadTickets(filters));
+      setAppliedFilters(filters);
+      applyTicketResult(await loadTickets(filters, 1));
     } catch (requestError) {
       setError(getApiError(requestError));
     } finally {
@@ -236,10 +249,24 @@ export default function HomePage({ user, onLogout }) {
 
   async function clearFilters() {
     setFilters(EMPTY_FILTERS);
+    setAppliedFilters(EMPTY_FILTERS);
     setLoading(true);
     setError('');
     try {
-      setTickets(await loadTickets(EMPTY_FILTERS));
+      applyTicketResult(await loadTickets(EMPTY_FILTERS, 1));
+    } catch (requestError) {
+      setError(getApiError(requestError));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function changePage(nextPage) {
+    if (loading || nextPage < 1 || nextPage > pagination.totalPages || nextPage === pagination.page) return;
+    setLoading(true);
+    setError('');
+    try {
+      applyTicketResult(await loadTickets(appliedFilters, nextPage));
     } catch (requestError) {
       setError(getApiError(requestError));
     } finally {
@@ -670,6 +697,31 @@ export default function HomePage({ user, onLogout }) {
                 )}
               </tbody>
             </table>
+          </div>
+
+          <div className="ticket-pagination" aria-label="Ticket pagination">
+            <span>
+              {pagination.total === 0
+                ? '0 tickets'
+                : `Showing ${(pagination.page - 1) * pagination.pageSize + 1}–${Math.min(pagination.page * pagination.pageSize, pagination.total)} of ${pagination.total}`}
+            </span>
+            <div>
+              <button
+                type="button"
+                onClick={() => changePage(pagination.page - 1)}
+                disabled={loading || pagination.page <= 1}
+              >
+                PREV
+              </button>
+              <strong>PAGE {pagination.page} / {pagination.totalPages}</strong>
+              <button
+                type="button"
+                onClick={() => changePage(pagination.page + 1)}
+                disabled={loading || pagination.page >= pagination.totalPages}
+              >
+                NEXT
+              </button>
+            </div>
           </div>
         </section>
 
