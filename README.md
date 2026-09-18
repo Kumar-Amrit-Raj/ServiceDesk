@@ -1,43 +1,59 @@
 # ServiceDesk — Full-Stack IT Helpdesk & Ticket Management System
 
-ServiceDesk is a full-stack IT helpdesk application built as a portfolio project using React, Node.js, Express, and PostgreSQL. It supports role-based ticket workflows, SLA-style target tracking, comments and activity history, deterministic duplicate detection, and suggestions from previously resolved tickets.
+ServiceDesk is a full-stack IT support application built with React, Node.js, Express, and PostgreSQL. It models a realistic helpdesk workflow with role-based access, ticket assignment, SLA-style target tracking, comments, audit history, admin controls, operational analytics, queue filtering, sorting, and server-side pagination.
 
-**Project status:** Core application complete and verified locally. Final deployment and presentation polish are in progress.
+**Status:** Feature-complete locally. Pre-deployment verification and final presentation review are in progress.
 
 ## Tech stack
 
-- **Frontend:** React.js, JavaScript, CSS, Vite, Axios
-- **Backend:** Node.js, Express.js
+- **Frontend:** React, JavaScript, CSS, Vite, Axios
+- **Backend:** Node.js, Express
 - **Database:** PostgreSQL with `pg`
-- **Authentication:** bcryptjs + JWT
-- **Architecture:** REST APIs
+- **Authentication:** JWT + bcryptjs
+- **Architecture:** REST API
 - **Testing:** Node.js built-in test runner with PostgreSQL integration tests
 
-## Features
+## Core capabilities
 
-### Authentication and roles
+### Authentication and authorization
 
-- User registration and login.
-- Password hashing with bcrypt using cost factor 12.
-- JWT authentication with one-day expiry.
+- Registration and login with hashed passwords.
+- JWT-based authentication with one-day expiry.
 - Roles: `user`, `support`, and `admin`.
-- Public registration always creates a normal `user` account.
-- Current user role is loaded from PostgreSQL on authenticated requests instead of trusting the role stored in a token.
-- Reusable role-based authorization middleware for support/admin actions.
+- Public registration always creates a normal user.
+- The authenticated user's current role is reloaded from PostgreSQL on protected requests instead of trusting a role embedded in the token.
+- Reusable role-based authorization middleware protects support/admin and admin-only actions.
 
-### Ticket management
+### Ticket workflow
 
-- Create support tickets with subject, category, priority, and description.
-- Priorities: `low`, `medium`, and `high`.
-- Status workflow: `open`, `in_progress`, `resolved`, and `closed`.
+- Create tickets with subject, category, priority, and description.
+- Priorities: `low`, `medium`, `high`.
+- Status workflow: `open`, `in_progress`, `resolved`, `closed`.
 - Normal users can only access their own tickets.
-- Support/admin users can work across the support queue.
-- Support/admin users can assign tickets to support agents and update ticket status.
-- Search and filter tickets by status, priority, SLA state, and text search.
-- Ticket comments for requester/support communication.
+- Support/admin users can access the shared support queue.
+- Support/admin users can assign tickets to support/admin agents and update ticket status.
+- Comments support requester/support communication.
 - Ticket history records assignment and status changes.
 
-### Target resolution / SLA tracking
+### Queue management
+
+The ticket queue supports:
+
+- Text search.
+- Status filtering.
+- Priority filtering.
+- Category filtering.
+- Assignee filtering for staff, including **Unassigned**.
+- SLA-state filtering.
+- Sorting by:
+  - newest,
+  - oldest,
+  - priority,
+  - SLA deadline,
+  - recently updated.
+- Server-side pagination with total counts and stable filtered summaries.
+
+### SLA-style tracking
 
 Target resolution time is calculated when a ticket is created:
 
@@ -47,7 +63,7 @@ Target resolution time is calculated when a ticket is created:
 | Medium | 24 hours |
 | Low | 48 hours |
 
-Each ticket exposes an SLA-style state:
+Ticket SLA states:
 
 - `on_track`
 - `due_soon` — target is within the next 4 hours
@@ -55,29 +71,77 @@ Each ticket exposes an SLA-style state:
 - `met`
 - `breached`
 
-The dashboard includes SLA filtering, remaining/overdue time, and an SLA Watch summary when tickets are due soon or overdue.
+The UI displays target time, remaining/overdue time, SLA badges, and an SLA Watch summary.
 
 ### Duplicate-ticket detection
 
-Before creating a ticket, ServiceDesk checks active tickets in the same category using deterministic keyword overlap.
+Before opening a ticket, ServiceDesk can check active tickets in the same category using deterministic keyword overlap.
 
-- No AI/ML model is used.
-- Hyphenated terms such as `Wi-Fi` are normalized for matching.
+- No AI/ML model is required.
+- Hyphenated terms such as `Wi-Fi` are normalized.
 - Common stop words are ignored.
-- A possible duplicate is shown when there are at least two shared keywords and the overlap score reaches the configured threshold, or when titles match exactly.
-- The UI shows matching ticket IDs, shared keywords, status, and match percentage.
-- Users can review the existing ticket or explicitly choose **Create Anyway**.
-- Privacy rule: normal users only see duplicate candidates from their own tickets; support/admin users can compare across the queue.
+- Matching results show ticket ID, shared keywords, status, and match percentage.
+- Users may review an existing request before explicitly choosing **Create Anyway**.
+- Normal users only see duplicate candidates from their own tickets; support/admin users can compare across the queue.
 
 ### Previous resolved-ticket suggestions
 
-ServiceDesk also checks similar `resolved` or `closed` tickets in the same category.
+ServiceDesk can also suggest similar resolved/closed tickets from the same category.
 
-- Suggestions use the same deterministic category + keyword matching approach.
-- A matching previous support note can be displayed as troubleshooting guidance.
-- The UI labels this clearly as the **Last Support Note** rather than assuming it is always the final technical fix.
-- Users can review the resolved ticket first or create a new ticket if the issue remains.
-- Normal users only receive suggestions from their own past tickets; support/admin users can use resolved tickets across the queue.
+- Uses the same deterministic matching strategy.
+- Can surface the latest relevant support note as troubleshooting context.
+- Normal users only receive suggestions from their own historical tickets.
+- Support/admin users can use resolved tickets across the support queue.
+
+### Admin controls
+
+Admin-only tools include:
+
+- User management:
+  - promote `user` → `support`,
+  - demote `support` → `user`,
+  - prevent self-demotion,
+  - prevent changing another admin through the normal user-management screen.
+- Category management:
+  - create categories,
+  - rename categories,
+  - enable/disable categories,
+  - preserve historical tickets when a category is disabled.
+- Disabled categories are removed from new-ticket choices and cannot be used to create new tickets.
+
+### Support analytics
+
+Support and admin users can view operational metrics including:
+
+- total tickets,
+- open/in-progress tickets,
+- resolved/closed tickets,
+- current overdue tickets,
+- SLA met vs breached,
+- SLA compliance percentage,
+- average resolution time,
+- tickets by priority,
+- top ticket categories.
+
+## Database model
+
+The PostgreSQL schema contains five main tables:
+
+- `users`
+- `categories`
+- `tickets`
+- `comments`
+- `ticket_history`
+
+Important relationships:
+
+- each ticket belongs to one requester;
+- a ticket may be assigned to a support/admin user;
+- each ticket belongs to a category;
+- comments belong to both a ticket and an author;
+- workflow changes are stored separately from comments in `ticket_history`.
+
+Categories include an `is_active` flag so they can be disabled without deleting historical ticket data.
 
 ## Folder structure
 
@@ -87,6 +151,8 @@ ServiceDesk/
 │   ├── src/
 │   │   ├── config/
 │   │   ├── controllers/
+│   │   │   ├── adminController.js
+│   │   │   ├── analyticsController.js
 │   │   │   ├── authController.js
 │   │   │   ├── duplicateController.js
 │   │   │   ├── healthController.js
@@ -94,7 +160,8 @@ ServiceDesk/
 │   │   │   └── ticketController.js
 │   │   ├── database/
 │   │   │   ├── pool.js
-│   │   │   └── schema.sql
+│   │   │   ├── schema.sql
+│   │   │   └── seedCategories.js
 │   │   ├── middleware/
 │   │   ├── routes/
 │   │   ├── app.js
@@ -102,6 +169,8 @@ ServiceDesk/
 │   ├── test/
 │   │   ├── auth.test.js
 │   │   ├── duplicates.test.js
+│   │   ├── management.test.js
+│   │   ├── queue.test.js
 │   │   ├── sla.test.js
 │   │   ├── solutions.test.js
 │   │   └── tickets.test.js
@@ -118,33 +187,21 @@ ServiceDesk/
 │   ├── index.html
 │   ├── vite.config.js
 │   └── package.json
+├── docs/
+│   └── INTERVIEW_GUIDE.md
 ├── .gitignore
 └── README.md
 ```
-
-## Database model
-
-The PostgreSQL schema contains five main tables:
-
-- `users`
-- `categories`
-- `tickets`
-- `comments`
-- `ticket_history`
-
-Tickets reference their requester, optional assignee, and category through foreign keys. Comments reference both a ticket and an author. Ticket history stores workflow changes separately from conversation comments.
-
-The schema also validates ticket timestamps such as target resolution, resolved time, and updated time.
 
 ## Local setup
 
 ### Prerequisites
 
 - Node.js and npm
-- PostgreSQL 17 or another compatible PostgreSQL installation
+- PostgreSQL 17 or a compatible version
 - Git
 
-### 1. Clone and install dependencies
+### 1. Clone and install
 
 ```sh
 git clone https://github.com/Kumar-Amrit-Raj/ServiceDesk.git
@@ -159,7 +216,7 @@ npm ci
 
 ### 2. Configure the backend
 
-Create `backend/.env` from `backend/.env.example` and configure:
+Create `backend/.env` from `backend/.env.example`:
 
 ```env
 PORT=5000
@@ -167,35 +224,27 @@ DATABASE_URL=postgresql://<username>:<password>@localhost:5432/servicedesk
 JWT_SECRET=<long-random-private-value>
 ```
 
-Generate a private JWT secret locally if needed:
+Never commit real credentials.
 
-```sh
-node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
-```
-
-Never commit `.env` or real database credentials.
-
-### 3. Create a fresh database
-
-For a new empty local installation:
+### 3. Initialize a fresh database
 
 ```sh
 psql -U postgres -c "CREATE DATABASE servicedesk;"
 psql -U postgres -d servicedesk -v ON_ERROR_STOP=1 -f backend/src/database/schema.sql
 ```
 
-`schema.sql` is intended for fresh initialization rather than repeated migrations on an existing populated database.
+`schema.sql` is intended for a fresh database.
 
-### 4. Run the application
+### 4. Run locally
 
-Start the backend:
+Backend:
 
 ```sh
 cd backend
 npm run dev
 ```
 
-Start the frontend in another terminal:
+Frontend in a second terminal:
 
 ```sh
 cd frontend
@@ -208,7 +257,7 @@ Open:
 http://localhost:5173
 ```
 
-During local development, Vite proxies `/api` requests to the Express backend on port 5000.
+Vite proxies `/api` requests to the Express backend on port 5000 during development.
 
 ## API overview
 
@@ -225,48 +274,60 @@ During local development, Vite proxies `/api` requests to the Express backend on
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| GET | `/api/tickets` | List accessible tickets with filters |
+| GET | `/api/tickets` | List accessible tickets with filters, sorting, pagination and queue summary |
 | POST | `/api/tickets` | Create a ticket |
 | GET | `/api/tickets/:id` | Read one accessible ticket |
 | PATCH | `/api/tickets/:id` | Update assignment/status — support/admin |
-| GET | `/api/tickets/support-agents` | List support/admin assignees — support/admin |
-| GET | `/api/tickets/:id/comments` | List ticket comments |
+| GET | `/api/tickets/support-agents` | List valid assignees — support/admin |
+| GET | `/api/tickets/analytics` | Operational analytics — support/admin |
+| GET | `/api/tickets/:id/comments` | List comments |
 | POST | `/api/tickets/:id/comments` | Add a comment |
-| GET | `/api/tickets/:id/history` | Read ticket workflow history |
+| GET | `/api/tickets/:id/history` | Read workflow history |
 | POST | `/api/tickets/duplicate-check` | Find similar active tickets |
 | POST | `/api/tickets/solution-suggestions` | Find similar resolved tickets |
-| GET | `/api/categories` | List ticket categories |
 
-## Frontend session scope
+### Categories and admin
 
-The frontend stores the JWT in `localStorage` and attaches it to API requests with Axios. On refresh, the application validates the session through `/api/auth/me`.
-
-This is appropriate for the scope of this portfolio application, but it should not be described as a fully production-hardened authentication platform. Features such as refresh-token rotation, password reset, email verification, advanced rate limiting, and server-side token revocation are outside the current project scope.
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/categories` | List active categories |
+| GET | `/api/admin/users` | List users — admin |
+| PATCH | `/api/admin/users/:id/role` | Change user/support role — admin |
+| GET | `/api/admin/categories` | List all categories — admin |
+| POST | `/api/admin/categories` | Create category — admin |
+| PATCH | `/api/admin/categories/:id` | Rename/enable/disable category — admin |
 
 ## Verification
 
-### Backend
-
-With PostgreSQL running and `backend/.env` configured:
+Backend integration tests:
 
 ```sh
 cd backend
 npm test
 ```
 
-The current integration suite covers authentication, authorization, ticket CRUD and workflow, comments, history, SLA states/filtering, duplicate detection, privacy rules, and resolved-ticket suggestions.
+The suite covers authentication, authorization, ticket access, workflow updates, comments, history, SLA behavior, duplicate detection, resolved-ticket suggestions, server-side queue pagination, sorting, assignee filtering, admin controls, category activation rules, and analytics authorization.
 
-**Current verified result: 45 tests passing, 0 failing.**
-
-### Frontend
+Frontend production build:
 
 ```sh
 cd frontend
 npm run build
 ```
 
-The Vite production build has been verified successfully.
+Both commands should be green before deployment.
 
-## Current scope
+## Security and scope notes
 
-ServiceDesk is intentionally kept as an explainable student full-stack project rather than being overloaded with unrelated infrastructure. The main focus is relational data modelling, REST APIs, authentication and authorization, realistic ticket workflow, PostgreSQL integration, deterministic matching logic, and a usable React interface.
+- Passwords are hashed with bcrypt.
+- SQL queries use parameterized values.
+- Public registration cannot create privileged accounts.
+- Role authorization is enforced server-side.
+- Normal users cannot access another user's ticket.
+- Real secrets belong in environment variables and are excluded from Git.
+- The frontend currently stores the JWT in `localStorage`, which is acceptable for this portfolio scope but is not presented as a production-hardened identity platform.
+- Refresh-token rotation, password reset, email verification, advanced rate limiting, file scanning, and server-side token revocation are intentionally outside the current project scope.
+
+## Project focus
+
+ServiceDesk is intentionally built around explainable full-stack engineering rather than adding unrelated features. The project demonstrates relational modelling, REST API design, PostgreSQL queries, authentication/authorization, workflow state, audit history, filtering/sorting/pagination, deterministic matching logic, analytics, testing, and responsive React UI.
