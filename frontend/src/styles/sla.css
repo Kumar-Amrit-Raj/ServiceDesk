@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  border: 1px solid #ead8c9;
+  border: 1px solid #f0c9b5;
   border-left: 4px solid #e26a2c;
   background: #fff9f5;
   box-shadow: 0 4px 12px rgba(23, 24, 20, 0.035);
@@ -28,11 +28,11 @@
 }
 
 .sla-watch strong {
-  color: #9d3127;
+  color: #c84b12;
 }
 
 .sla-watch > div > span:not(.sla-watch-label) {
-  color: #966411;
+  color: #386b9b;
   font-weight: 800;
 }
 
@@ -85,28 +85,28 @@
 }
 
 .sla-on_track {
-  border-color: #b8d4c0;
-  background: #eef8f1;
-  color: #386c4b;
+  border-color: #c8d8e8;
+  background: #f4f8fc;
+  color: #386b9b;
 }
 
 .sla-due_soon {
-  border-color: #ecd28d;
-  background: #fff8df;
-  color: #8b6100;
+  border-color: #c8d8e8;
+  background: #f4f8fc;
+  color: #386b9b;
 }
 
 .sla-overdue,
 .sla-breached {
-  border-color: #e4b2aa;
-  background: #fff0ed;
-  color: #a3392c;
+  border-color: #f0c9b5;
+  background: #fff5f1;
+  color: #c84b12;
 }
 
 .sla-met {
-  border-color: #afd4bd;
-  background: #edf8f1;
-  color: #2f7048;
+  border-color: #c8d8e8;
+  background: #f4f8fc;
+  color: #386b9b;
 }
 
 .ticket-row-overdue > td {
@@ -124,7 +124,7 @@
 
 .ticket-meta-sla .sla-overdue,
 .ticket-meta-sla .sla-breached {
-  box-shadow: inset 3px 0 0 #c84435;
+  box-shadow: inset 3px 0 0 #c84b12;
 }
 
 @media (max-width: 1100px) {
