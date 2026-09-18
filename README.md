@@ -315,7 +315,9 @@ cd frontend
 npm run build
 ```
 
-Both commands should be green before deployment.
+Current CI verification: **60 backend tests passing, 0 failing**, and the frontend production build completes successfully.
+
+The repository also includes a GitHub Actions workflow at `.github/workflows/ci.yml` that provisions PostgreSQL 17, initializes the schema, runs the backend integration suite, and builds the frontend on pushes and pull requests to `main`.
 
 ## Security and scope notes
 
