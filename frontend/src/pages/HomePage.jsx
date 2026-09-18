@@ -28,7 +28,7 @@ const EMPTY_FORM = {
   priority: 'medium',
 };
 
-const EMPTY_FILTERS = { status: '', priority: '', categoryId: '', assigneeId: '', sla: '', search: '' };
+const EMPTY_FILTERS = { status: '', priority: '', categoryId: '', assigneeId: '', sla: '', search: '', sort: 'newest' };
 
 function formatStatus(status) {
   return String(status ?? '').replace('_', ' ');
@@ -111,6 +111,7 @@ export default function HomePage({ user, onLogout }) {
     if (isStaff && nextFilters.assigneeId) params.assigneeId = nextFilters.assigneeId;
     if (nextFilters.sla) params.sla = nextFilters.sla;
     if (nextFilters.search.trim()) params.search = nextFilters.search.trim();
+    if (nextFilters.sort) params.sort = nextFilters.sort;
     return fetchTickets(params);
   }
 
@@ -604,6 +605,17 @@ export default function HomePage({ user, onLogout }) {
                 <option value="overdue">Overdue</option>
                 <option value="met">Met</option>
                 <option value="breached">Breached</option>
+              </select>
+              <select
+                aria-label="Sort tickets"
+                value={filters.sort}
+                onChange={(event) => setFilters({ ...filters, sort: event.target.value })}
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="priority">Priority: high to low</option>
+                <option value="sla">SLA deadline</option>
+                <option value="updated">Recently updated</option>
               </select>
               <button type="submit">APPLY</button>
               <button type="button" className="filter-clear" onClick={clearFilters}>CLEAR</button>
