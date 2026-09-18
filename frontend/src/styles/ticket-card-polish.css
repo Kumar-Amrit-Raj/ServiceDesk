@@ -32,7 +32,7 @@
 }
 
 .ticket-description-block > span {
-  color: #76590f;
+  color: #62645e;
 }
 
 /* Workflow, conversation and activity stay as distinct cards. */
@@ -70,12 +70,12 @@
 }
 
 .history-panel {
-  border-top: 3px solid #4e855f;
+  border-top: 3px solid #70726c;
   border-left: 1px solid #d7d8d2;
 }
 
 .history-panel .desk-eyebrow {
-  color: #3f7553;
+  color: #555750;
 }
 
 /* Warm branded ticket-table header instead of a neutral grey strip. */
@@ -85,9 +85,9 @@
 }
 
 .ticket-table th {
-  color: #6f3f29;
+  color: #555750;
   border-top: 2px solid #ff651f;
-  border-bottom: 1px solid #efc4ad;
+  border-bottom: 1px solid #d9dad4;
   font-weight: 800;
 }
 
