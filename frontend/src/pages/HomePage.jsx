@@ -388,10 +388,26 @@ export default function HomePage({ user, onLogout }) {
         </div>
 
         <section className="desk-stats" aria-label="Ticket summary">
-          <article><span>OPEN</span><strong>{stats.open}</strong></article>
-          <article><span>IN PROGRESS</span><strong>{stats.inProgress}</strong></article>
-          <article><span>RESOLVED / CLOSED</span><strong>{stats.resolved}</strong></article>
-          <article><span>TOTAL</span><strong>{pagination.total}</strong></article>
+          <article>
+            <span>OPEN</span>
+            <strong>{stats.open}</strong>
+            <small>Needs attention</small>
+          </article>
+          <article>
+            <span>IN PROGRESS</span>
+            <strong>{stats.inProgress}</strong>
+            <small>Being worked</small>
+          </article>
+          <article>
+            <span>RESOLVED / CLOSED</span>
+            <strong>{stats.resolved}</strong>
+            <small>Completed requests</small>
+          </article>
+          <article>
+            <span>TOTAL</span>
+            <strong>{pagination.total}</strong>
+            <small>All requests</small>
+          </article>
         </section>
 
         {isStaff && <SupportAnalytics refreshKey={tickets.map((ticket) => `${ticket.id}:${ticket.status}:${ticket.assigned_to ?? ''}`).join('|')} />}
@@ -571,81 +587,104 @@ export default function HomePage({ user, onLogout }) {
               <h2>{user.role === 'user' ? 'Your requests' : 'All requests'}</h2>
             </div>
             <form className="ticket-filters" onSubmit={applyFilters}>
-              <input
-                aria-label="Search tickets"
-                placeholder="Search tickets"
-                value={filters.search}
-                onChange={(event) => setFilters({ ...filters, search: event.target.value })}
-              />
-              <select
-                aria-label="Filter by status"
-                value={filters.status}
-                onChange={(event) => setFilters({ ...filters, status: event.target.value })}
-              >
-                <option value="">All statuses</option>
-                <option value="open">Open</option>
-                <option value="in_progress">In progress</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
-              </select>
-              <select
-                aria-label="Filter by priority"
-                value={filters.priority}
-                onChange={(event) => setFilters({ ...filters, priority: event.target.value })}
-              >
-                <option value="">All priorities</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-              <select
-                aria-label="Filter by category"
-                value={filters.categoryId}
-                onChange={(event) => setFilters({ ...filters, categoryId: event.target.value })}
-              >
-                <option value="">All categories</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>{category.name}</option>
-                ))}
-              </select>
-              {isStaff && (
+              <label className="ticket-filter-field ticket-filter-search">
+                <span>SEARCH</span>
+                <input
+                  aria-label="Search tickets"
+                  placeholder="Subject or keyword"
+                  value={filters.search}
+                  onChange={(event) => setFilters({ ...filters, search: event.target.value })}
+                />
+              </label>
+              <label className="ticket-filter-field">
+                <span>STATUS</span>
                 <select
-                  aria-label="Filter by assignee"
-                  value={filters.assigneeId}
-                  onChange={(event) => setFilters({ ...filters, assigneeId: event.target.value })}
+                  aria-label="Filter by status"
+                  value={filters.status}
+                  onChange={(event) => setFilters({ ...filters, status: event.target.value })}
                 >
-                  <option value="">All assignees</option>
-                  <option value="unassigned">Unassigned</option>
-                  {agents.map((agent) => (
-                    <option key={agent.id} value={agent.id}>{agent.name} · {agent.role}</option>
+                  <option value="">All statuses</option>
+                  <option value="open">Open</option>
+                  <option value="in_progress">In progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </label>
+              <label className="ticket-filter-field">
+                <span>PRIORITY</span>
+                <select
+                  aria-label="Filter by priority"
+                  value={filters.priority}
+                  onChange={(event) => setFilters({ ...filters, priority: event.target.value })}
+                >
+                  <option value="">All priorities</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </label>
+              <label className="ticket-filter-field">
+                <span>CATEGORY</span>
+                <select
+                  aria-label="Filter by category"
+                  value={filters.categoryId}
+                  onChange={(event) => setFilters({ ...filters, categoryId: event.target.value })}
+                >
+                  <option value="">All categories</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>{category.name}</option>
                   ))}
                 </select>
+              </label>
+              {isStaff && (
+                <label className="ticket-filter-field">
+                  <span>ASSIGNEE</span>
+                  <select
+                    aria-label="Filter by assignee"
+                    value={filters.assigneeId}
+                    onChange={(event) => setFilters({ ...filters, assigneeId: event.target.value })}
+                  >
+                    <option value="">All assignees</option>
+                    <option value="unassigned">Unassigned</option>
+                    {agents.map((agent) => (
+                      <option key={agent.id} value={agent.id}>{agent.name} · {agent.role}</option>
+                    ))}
+                  </select>
+                </label>
               )}
-              <select
-                aria-label="Filter by SLA state"
-                value={filters.sla}
-                onChange={(event) => setFilters({ ...filters, sla: event.target.value })}
-              >
-                <option value="">All SLA states</option>
-                <option value="on_track">On track</option>
-                <option value="due_soon">Due soon</option>
-                <option value="overdue">Overdue</option>
-                <option value="met">Met</option>
-                <option value="breached">Breached</option>
-              </select>
-              <select
-                aria-label="Sort tickets"
-                value={filters.sort}
-                onChange={(event) => setFilters({ ...filters, sort: event.target.value })}
-              >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="priority">Priority: high to low</option>
-                <option value="sla">SLA deadline</option>
-                <option value="updated">Recently updated</option>
-              </select>
-              <button type="submit">APPLY</button>
-              <button type="button" className="filter-clear" onClick={clearFilters}>CLEAR</button>
+              <label className="ticket-filter-field">
+                <span>SLA STATE</span>
+                <select
+                  aria-label="Filter by SLA state"
+                  value={filters.sla}
+                  onChange={(event) => setFilters({ ...filters, sla: event.target.value })}
+                >
+                  <option value="">All SLA states</option>
+                  <option value="on_track">On track</option>
+                  <option value="due_soon">Due soon</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="met">Met</option>
+                  <option value="breached">Breached</option>
+                </select>
+              </label>
+              <label className="ticket-filter-field">
+                <span>SORT</span>
+                <select
+                  aria-label="Sort tickets"
+                  value={filters.sort}
+                  onChange={(event) => setFilters({ ...filters, sort: event.target.value })}
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="priority">Priority: high to low</option>
+                  <option value="sla">SLA deadline</option>
+                  <option value="updated">Recently updated</option>
+                </select>
+              </label>
+              <div className="ticket-filter-actions">
+                <button type="submit">APPLY</button>
+                <button type="button" className="filter-clear" onClick={clearFilters}>CLEAR</button>
+              </div>
             </form>
           </div>
 
@@ -669,6 +708,7 @@ export default function HomePage({ user, onLogout }) {
                     <td>
                       <strong>{ticket.title}</strong>
                       {user.role !== 'user' && <span className="ticket-requester">{ticket.requester_name}</span>}
+                      <span className="ticket-created">CREATED {formatDate(ticket.created_at)}</span>
                     </td>
                     <td>{ticket.category_name}</td>
                     <td><span className={'priority priority-' + ticket.priority}>{ticket.priority}</span></td>
