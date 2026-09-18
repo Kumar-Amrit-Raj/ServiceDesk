@@ -4,7 +4,7 @@
 
 ServiceDesk is a full-stack IT support application built with React, Node.js, Express, and PostgreSQL. It models a realistic helpdesk workflow with role-based access, ticket assignment, SLA-style target tracking, comments, audit history, admin controls, operational analytics, queue filtering, sorting, and server-side pagination.
 
-**Status:** Feature-complete. Pre-deployment code, CI, and Neon database checks have passed; hosting deployment is the remaining step.
+**Status:** Feature-complete and deployed on Render with Neon PostgreSQL.
 
 ## Tech stack
 
