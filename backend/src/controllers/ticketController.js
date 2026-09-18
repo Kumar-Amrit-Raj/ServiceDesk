@@ -251,7 +251,30 @@ export async function listTickets(req, res) {
   const page = Math.min(requestedPage, totalPages);
   const offset = (page - 1) * requestedPageSize;
   const pageValues = [...values, requestedPageSize, offset];
-  const limitParameter = '
+  const limitParameter = "$" + (values.length + 1);
+  const offsetParameter = "$" + (values.length + 2);
+
+  const { rows } = await pool.query(
+    `${ticketSelect()}${clause} ORDER BY ${orderBy} LIMIT ${limitParameter} OFFSET ${offsetParameter}`,
+    pageValues,
+  );
+
+  res.json({
+    tickets: rows,
+    pagination: {
+      page,
+      pageSize: requestedPageSize,
+      total,
+      totalPages,
+    },
+    summary: {
+      open: summary.open,
+      inProgress: summary.in_progress,
+      resolved: summary.resolved,
+      overdue: summary.overdue,
+      dueSoon: summary.due_soon,
+    },
+  });
 }
 
 export async function getTicket(req, res) {
