@@ -2,16 +2,37 @@
 
 ServiceDesk is a full-stack IT support application built with React, Node.js, Express, and PostgreSQL. It models a realistic helpdesk workflow with role-based access, ticket assignment, SLA-style target tracking, comments, audit history, admin controls, operational analytics, queue filtering, sorting, and server-side pagination.
 
-**Status:** Feature-complete locally. Pre-deployment verification and final presentation review are in progress.
+**Status:** Feature-complete. Pre-deployment code, CI, and Neon database checks have passed; hosting deployment is the remaining step.
 
 ## Tech stack
 
 - **Frontend:** React, JavaScript, CSS, Vite, Axios
 - **Backend:** Node.js, Express
-- **Database:** PostgreSQL with `pg`
+- **Database:** PostgreSQL 17 with `pg` (Neon for the hosted database)
 - **Authentication:** JWT + bcryptjs
 - **Architecture:** REST API
 - **Testing:** Node.js built-in test runner with PostgreSQL integration tests
+
+
+## Architecture
+
+```mermaid
+flowchart LR
+    UI[React + Vite UI]
+    API[Express REST API]
+    AUTH[JWT authentication + RBAC]
+    DOMAIN[Ticket workflow / SLA / matching / analytics]
+    DB[(Neon PostgreSQL 17)]
+
+    UI -->|/api| API
+    API --> AUTH
+    API --> DOMAIN
+    AUTH --> DB
+    DOMAIN --> DB
+```
+
+In development, Vite proxies `/api` to the Express server. In production, the Express application can serve the built React files from `frontend/dist`, keeping the browser and API on the same origin.
+
 
 ## Core capabilities
 
@@ -318,6 +339,34 @@ npm run build
 Current CI verification: **60 backend tests passing, 0 failing**, and the frontend production build completes successfully.
 
 The repository also includes a GitHub Actions workflow at `.github/workflows/ci.yml` that provisions PostgreSQL 17, initializes the schema, runs the backend integration suite, and builds the frontend on pushes and pull requests to `main`.
+
+## Deployment readiness
+
+The repository is designed to run as one web service with the Express backend serving the built React frontend.
+
+Required production environment variables:
+
+```env
+NODE_ENV=production
+DATABASE_URL=<Neon PostgreSQL connection string>
+JWT_SECRET=<long random private secret>
+```
+
+A typical production build is:
+
+```sh
+npm ci --prefix backend
+npm ci --prefix frontend
+npm run build --prefix frontend
+```
+
+Start the application with:
+
+```sh
+npm start --prefix backend
+```
+
+The hosting platform may provide `PORT` automatically. Do not commit production secrets or a real `.env` file.
 
 ## Security and scope notes
 
