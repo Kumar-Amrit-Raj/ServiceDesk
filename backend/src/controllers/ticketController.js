@@ -4,6 +4,13 @@ const PRIORITIES = new Set(['low', 'medium', 'high']);
 const STATUSES = new Set(['open', 'in_progress', 'resolved', 'closed']);
 const SLA_STATES = new Set(['on_track', 'due_soon', 'overdue', 'met', 'breached']);
 const RESOLUTION_HOURS = { high: 12, medium: 24, low: 48 };
+const TICKET_SORTS = {
+  newest: 't.created_at DESC, t.id DESC',
+  oldest: 't.created_at ASC, t.id ASC',
+  priority: `CASE t.priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END ASC, t.created_at DESC, t.id DESC`,
+  sla: 't.target_resolution_at ASC NULLS LAST, t.created_at DESC, t.id DESC',
+  updated: 't.updated_at DESC, t.id DESC',
+};
 
 function positiveInteger(value) {
   const number = Number(value);
@@ -203,9 +210,15 @@ export async function listTickets(req, res) {
     }
   }
 
+  const sort = String(req.query.sort ?? 'newest').trim().toLowerCase();
+  const orderBy = TICKET_SORTS[sort];
+  if (!orderBy) {
+    return res.status(400).json({ message: 'Invalid ticket sort option.' });
+  }
+
   const clause = where.length ? ' WHERE ' + where.map((condition) => `(${condition})`).join(' AND ') : '';
   const { rows } = await pool.query(
-    `${ticketSelect()}${clause} ORDER BY t.created_at DESC, t.id DESC`,
+    `${ticketSelect()}${clause} ORDER BY ${orderBy}`,
     values,
   );
 
